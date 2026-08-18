@@ -1,0 +1,48 @@
+# Product Requirements Document: cairn-dashboard
+
+## Metadata
+- PRD Version: v0.1
+- Last Updated: 2026-08-19
+- Derived From: docs/requirements/project-definition.md
+- Author:
+  - AI Tool: Claude Code
+  - LLM Model: claude-sonnet-5
+- Reviewed By:
+
+---
+
+## Overview
+cairn-dashboard is a local, single-user web dashboard giving real-time visibility into Claude Code usage/cost, cairn task-tracker state, and running Unattended coding-chain swarms — replacing manual inspection of session transcripts, `TRACKER.md`, and `tmux`/`STATE.md`. This PRD covers the React redesign (Vite + React frontend, static build, served by the existing stdlib Python backend) and folds in the Swarms tab.
+
+## Personas
+| Persona | Description | Primary Goal |
+|---|---|---|
+| Cairn author/developer | Single user, running cairn against their own projects | Quickly check usage/cost, task state, and running swarms without digging through raw files |
+
+## Functional Requirements
+| ID | Requirement | Priority |
+|---|---|---|
+| FR-001 | Usage tab: cost/token totals, cost-over-time chart, by-model/by-version/by-subagent/by-skill rankings, sessions table | Must |
+| FR-002 | Tracker tab: Board (Status-column kanban) and Roadmap (Milestone-grouped) views from `docs/.tasks/TRACKER.md` | Must |
+| FR-003 | Swarms tab: `Mode: Unattended` tasks — phase, tmux liveness, `HANDOFF NEEDED` pane tail, stalled indicator (authoritative + soft hint) | Must |
+| FR-004 | Frontend polls backend JSON APIs on a 4s interval for near-real-time updates | Must |
+| FR-005 | Frontend ships as a static, pre-built bundle served by the existing Python backend — no new runtime dependency for end users | Must |
+| FR-006 | Existing `--task-report`/`--window-report` CLI report entry points (used by `task-orchestrator`) keep working unchanged | Must |
+
+## Non-Functional Requirements
+| ID | Category | Requirement |
+|---|---|---|
+| NFR-001 | Dependencies | Zero new runtime dependencies for end users — stdlib Python backend, pre-built static frontend (no Node/npm, no FastAPI, at runtime) |
+| NFR-002 | Security | Local-only, bound to `127.0.0.1`, no authentication |
+| NFR-003 | Reliability | Graceful degradation — a failed `tmux` check, a missing `dashboard/dist/`, an empty `TRACKER.md`, or zero running swarms each show a clear state; none crash the server |
+
+## Out of Scope
+- Authentication, multi-user access, or remote hosting (carried from Project Definition).
+- Automated release/version-bump workflow for the `dashboard/` submodule pointer — manual for now.
+- `dashboard/`'s own CI setup (tests, build verification) — a separate concern from this PRD.
+
+## Open Questions
+| # | Question | Owner | Status |
+|---|---|---|---|
+| 1 | How does a future cairn release bump the `dashboard/` submodule pointer? Manual today; could fold into `release-manager` later. | Cairn author | Open |
+| 2 | Should `product-designer` (UX Spec / UI Layout Spec) be added to this pipeline before architecture? Currently skipped. | Cairn author | Open |
