@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cairn Dashboard — Mockup</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --surface: #ffffff; --border: #e6e4de; --text: #1c1c1a; --text-dim: #6b6b62;
+    --text-faint: #9a988f; --primary: #3d6fd9; --success: #3d8b5f; --warning: #d9a441;
+    --error: #b5482f; --info: #4472c4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15171a; --surface: #1e2124; --border: #2c2f33; --text: #e9e7e0; --text-dim: #9c9a92;
+      --text-faint: #6d6b63; --primary: #5b8aef; --success: #4fae7c; --warning: #e0b256; --error: #d16249;
+      --info: #6a94e0;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15171a; --surface: #1e2124; --border: #2c2f33; --text: #e9e7e0; --text-dim: #9c9a92;
+    --text-faint: #6d6b63; --primary: #5b8aef; --success: #4fae7c; --warning: #e0b256; --error: #d16249;
+    --info: #6a94e0;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    display: flex; flex-direction: column;
+  }
+  .mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; }
+  .tabular { font-variant-numeric: tabular-nums; }
+
+  header {
+    display: flex; align-items: center; gap: 1.25rem; padding: .85rem 1.5rem;
+    border-bottom: 1px solid var(--border); flex-wrap: wrap;
+  }
+  h1 { font-size: 1rem; margin: 0; font-weight: 700; letter-spacing: -.01em; }
+  h1 span { color: var(--primary); }
+  .tabs { display: flex; gap: .2rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .2rem; }
+  .tab {
+    padding: .4rem .85rem; border-radius: 6px; cursor: pointer; color: var(--text-dim);
+    font-size: .82rem; font-weight: 500; border: none; background: none;
+  }
+  .tab[aria-selected="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+  #project { color: var(--text-faint); font-size: .76rem; margin-left: auto; }
+
+  .toolbar { display: flex; gap: 1.25rem; align-items: center; padding: .75rem 1.5rem; flex-wrap: wrap; }
+  .segmented { display: flex; gap: .2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .2rem; }
+  .segmented button {
+    border: none; background: none; padding: .32rem .7rem; border-radius: 6px; cursor: pointer;
+    color: var(--text-dim); font-size: .78rem; font-weight: 500;
+  }
+  .segmented button[aria-selected="true"] { background: var(--bg); color: var(--text); }
+
+  main { padding: 0 1.5rem 2rem; flex: 1 1 auto; overflow-y: auto; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .9rem; margin: 1rem 0; }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .85rem 1rem;
+  }
+  .stat .label { font-size: .68rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .3rem; font-weight: 600; }
+  .stat .value { font-size: 1.35rem; font-weight: 600; }
+  .stat .value.accent { color: var(--primary); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1rem 1.1rem; margin-bottom: .9rem;
+  }
+  .card .head { font-size: .68rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .8rem; font-weight: 600; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: .9rem; margin-bottom: .9rem; }
+
+  .chart-card svg { width: 100%; height: 140px; overflow: visible; display: block; }
+  .chart-card .bar { fill: var(--primary); opacity: .85; }
+  .chart-card .axis { font-size: 9px; fill: var(--text-faint); }
+
+  .rank-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: .5rem; align-items: center; padding: .3rem 0; font-size: .8rem; }
+  .rank-row .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rank-row .bar-track { grid-column: 1 / -1; height: 4px; background: var(--bg); border-radius: 3px; overflow: hidden; margin-bottom: .45rem; }
+  .rank-row .bar-fill { height: 100%; background: var(--primary); }
+  .rank-row .num { color: var(--text-dim); white-space: nowrap; }
+
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: .5rem .55rem; border-bottom: 1px solid var(--border); }
+  th { font-size: .66rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+  td.num { text-align: right; }
+  .table-wrap { overflow-x: auto; }
+
+  /* Tracker: Board */
+  .board { display: flex; gap: .8rem; overflow-x: auto; padding-bottom: .4rem; }
+  .col { flex: 0 0 240px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: .7rem; border-top: 3px solid var(--text-faint); }
+  .col-groomed { border-top-color: var(--info); }
+  .col-progress { border-top-color: var(--warning); }
+  .col-review { border-top-color: #8757b0; }
+  .col-blocked { border-top-color: var(--error); }
+  .col-done { border-top-color: var(--success); }
+  .col h2 { font-size: .66rem; text-transform: uppercase; letter-spacing: .05em; color: var(--text-faint); margin: .1rem .1rem .6rem; display: flex; justify-content: space-between; font-weight: 700; }
+  .task-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .55rem .65rem; margin-bottom: .55rem; }
+  .task-card .milestone { font-size: .64rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: .04em; margin-bottom: .25rem; }
+  .task-card .slug { font-weight: 600; font-size: .8rem; }
+  .task-card .scope { color: var(--text-dim); font-size: .76rem; margin-top: .2rem; line-height: 1.35; }
+
+  /* Tracker: Roadmap */
+  .rmap { display: flex; gap: 1.3rem; overflow-x: auto; padding: .5rem 0 1rem; }
+  .rstation { flex: 0 0 230px; }
+  .rstation .node { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: .72rem; font-weight: 700; margin-bottom: .6rem; border: 2px solid var(--border); color: var(--text-dim); }
+  .rstation.done .node { border-color: var(--success); background: var(--success); color: #fff; }
+  .rstation.active .node { border-color: var(--primary); color: var(--primary); }
+  .rstation .rname { font-weight: 600; font-size: .8rem; }
+  .rstation .rcount { color: var(--text-faint); font-size: .7rem; margin-left: .3rem; font-weight: 400; }
+  .icard { border-left: 3px solid var(--primary); background: var(--surface); border: 1px solid var(--border); border-left-width: 3px; border-radius: 6px; padding: .4rem .55rem; margin-top: .5rem; font-size: .76rem; }
+  .icard.is-done { color: var(--text-faint); text-decoration: line-through; border-left-color: var(--success); }
+
+  /* Swarms */
+  .swarm-list { display: flex; flex-direction: column; gap: .8rem; margin-top: 1rem; }
+  .swarm-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: .95rem 1.1rem; }
+  .swarm-top { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: .5rem; }
+  .swarm-slug { font-weight: 700; font-size: .86rem; }
+  .phase-pill { font-size: .68rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; padding: .18rem .55rem; border-radius: 99px; background: var(--bg); color: var(--text-dim); border: 1px solid var(--border); }
+  .phase-pill.handoff { background: var(--warning); color: #fff; border-color: transparent; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: .35rem; }
+  .dot.alive { background: var(--success); }
+  .dot.dead { background: var(--error); }
+  .dot.unknown { background: var(--text-faint); }
+  .swarm-meta { display: flex; gap: 1.3rem; flex-wrap: wrap; color: var(--text-dim); font-size: .78rem; margin-bottom: .5rem; }
+  .swarm-meta .k { color: var(--text-faint); margin-right: .35rem; }
+  .badge { display: inline-flex; align-items: center; gap: .3rem; font-size: .74rem; font-weight: 600; padding: .2rem .55rem; border-radius: 99px; }
+  .badge.stalled { background: var(--error); color: #fff; }
+  .hint { color: var(--text-faint); font-size: .78rem; }
+  .pane-tail {
+    margin-top: .6rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: .6rem .7rem; font-size: .74rem; line-height: 1.5; color: var(--text-dim); white-space: pre-wrap;
+  }
+  .pane-toggle { background: none; border: none; color: var(--primary); font-size: .76rem; font-weight: 600; cursor: pointer; padding: 0; margin-top: .3rem; }
+
+  .empty { color: var(--text-faint); font-size: .84rem; padding: 2rem 0; text-align: center; }
+
+  @media (max-width: 720px) {
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .card-grid { grid-template-columns: 1fr; }
+    .board, .rmap { flex-direction: column; }
+    .col, .rstation { flex: 1 1 auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Cairn <span>Dashboard</span></h1>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-view="usage">Usage</button>
+    <button class="tab" role="tab" aria-selected="false" data-view="tracker">Tracker</button>
+    <button class="tab" role="tab" aria-selected="false" data-view="swarms">Swarms</button>
+  </div>
+  <div id="project">~/projects/cairn</div>
+</header>
+
+<div class="toolbar" id="toolbar-usage">
+  <div class="segmented" role="group" aria-label="Date range">
+    <button aria-selected="false">Today</button>
+    <button aria-selected="true">7 days</button>
+    <button aria-selected="false">30 days</button>
+    <button aria-selected="false">Month</button>
+    <button aria-selected="false">All</button>
+  </div>
+</div>
+<div class="toolbar" id="toolbar-tracker" style="display:none">
+  <div class="segmented" role="group" aria-label="Tracker view">
+    <button aria-selected="true" data-sub="board">Board</button>
+    <button aria-selected="false" data-sub="road">Roadmap</button>
+  </div>
+</div>
+
+<main>
+  <section class="view active" id="view-usage">
+    <div class="stat-grid">
+      <div class="stat"><div class="label">Cost</div><div class="value accent tabular">$18.42</div></div>
+      <div class="stat"><div class="label">Tokens</div><div class="value tabular">4,218,900</div></div>
+      <div class="stat"><div class="label">Calls</div><div class="value tabular">612</div></div>
+      <div class="stat"><div class="label">Sessions</div><div class="value tabular">9</div></div>
+      <div class="stat"><div class="label">Cache hit</div><div class="value tabular">87.3%</div></div>
+    </div>
+    <div class="card chart-card">
+      <div class="head">Cost over time</div>
+      <svg viewBox="0 0 700 150" preserveAspectRatio="none">
+        <g class="bars"></g>
+        <g class="labels"></g>
+      </svg>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="head">By model (all time)</div>
+        <div class="rank-row"><div class="name">claude-sonnet-5</div><div class="num tabular">$14.90</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div>
+        <div class="rank-row"><div class="name">claude-opus-5</div><div class="num tabular">$2.85</div><div class="bar-track"><div class="bar-fill" style="width:19%"></div></div></div>
+        <div class="rank-row"><div class="name">claude-haiku-4-5</div><div class="num tabular">$0.67</div><div class="bar-track"><div class="bar-fill" style="width:5%"></div></div></div>
+      </div>
+      <div class="card">
+        <div class="head">By cairn version (all time)</div>
+        <div class="rank-row"><div class="name">0.18.0</div><div class="num tabular">$12.10</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div>
+        <div class="rank-row"><div class="name">0.17.2</div><div class="num tabular">$6.32</div><div class="bar-track"><div class="bar-fill" style="width:52%"></div></div></div>
+      </div>
+      <div class="card">
+        <div class="head">Top subagents (all time)</div>
+        <div class="rank-row"><div class="name">requirements-engineer</div><div class="num tabular">41</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div>
+        <div class="rank-row"><div class="name">qa-engineer</div><div class="num tabular">28</div><div class="bar-track"><div class="bar-fill" style="width:68%"></div></div></div>
+        <div class="rank-row"><div class="name">software-engineer</div><div class="num tabular">24</div><div class="bar-track"><div class="bar-fill" style="width:59%"></div></div></div>
+      </div>
+      <div class="card">
+        <div class="head">Top skills (all time)</div>
+        <div class="rank-row"><div class="name">writer-shared</div><div class="num tabular">33</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div>
+        <div class="rank-row"><div class="name">mermaid-diagrams</div><div class="num tabular">14</div><div class="bar-track"><div class="bar-fill" style="width:42%"></div></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="head">Sessions</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Session</th><th>Started</th><th class="num">Calls</th><th class="num">Cost</th><th>Version</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">3fae21b0</td><td>Aug 19, 7:12 AM</td><td class="num tabular">88</td><td class="num tabular">$2.94</td><td>0.18.0</td></tr>
+            <tr><td class="mono">9c02e77a</td><td>Aug 19, 6:03 AM</td><td class="num tabular">54</td><td class="num tabular">$1.61</td><td>0.18.0</td></tr>
+            <tr><td class="mono">1b88d4f1</td><td>Aug 18, 4:47 PM</td><td class="num tabular">142</td><td class="num tabular">$4.20</td><td>0.18.0</td></tr>
+            <tr><td class="mono">77af90cd</td><td>Aug 18, 11:20 AM</td><td class="num tabular">63</td><td class="num tabular">$1.85</td><td>0.17.2</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-tracker">
+    <div class="board" id="board">
+      <div class="col"><h2>Idea<span>1</span></h2>
+        <div class="task-card"><div class="slug">cli-export</div><div class="scope">Export usage as CSV via a new CLI flag</div></div>
+      </div>
+      <div class="col col-groomed"><h2>Groomed<span>1</span></h2>
+        <div class="task-card"><div class="milestone">v0.19 milestone</div><div class="slug">notes-local-file</div><div class="scope">Per-user gitignored .harness/notes.local.md</div></div>
+      </div>
+      <div class="col col-progress"><h2>In Progress<span>2</span></h2>
+        <div class="task-card"><div class="milestone">v0.19 milestone</div><div class="slug">dashboard-react-redesign</div><div class="scope">Vite+React frontend, Swarms tab</div></div>
+        <div class="task-card"><div class="slug">landing-page</div><div class="scope">Marketing page for cairn plugin</div></div>
+      </div>
+      <div class="col col-review"><h2>In Review<span>0</span></h2>
+        <div class="empty" style="padding:.5rem 0">—</div>
+      </div>
+      <div class="col col-blocked"><h2>Blocked<span>1</span></h2>
+        <div class="task-card"><div class="slug">impeccable-vendor</div><div class="scope">Waiting on marketplace approval</div></div>
+      </div>
+      <div class="col col-done"><h2>Done<span>2</span></h2>
+        <div class="task-card"><div class="slug">swarms-tab-backend</div><div class="scope">parse_state_md, discover_swarms, /api/swarms</div></div>
+        <div class="task-card"><div class="slug">cairn-feedback</div><div class="scope">Sanitized bug feedback flow</div></div>
+      </div>
+    </div>
+    <div class="rmap" id="road" style="display:none">
+      <div class="rstation done"><div class="node">✓</div><div class="rname">Foundation<span class="rcount">2/2 · Done</span></div>
+        <div class="icard is-done">swarms-tab-backend — parse_state_md, discover_swarms</div>
+        <div class="icard is-done">cairn-feedback — sanitized bug feedback flow</div>
+      </div>
+      <div class="rstation active"><div class="node">2</div><div class="rname">v0.19<span class="rcount">1/3 · In progress</span></div>
+        <div class="icard is-done">swarms-tab-backend — parse_state_md, discover_swarms</div>
+        <div class="icard">dashboard-react-redesign — Vite+React frontend, Swarms tab</div>
+        <div class="icard">notes-local-file — per-user gitignored .harness file</div>
+      </div>
+      <div class="rstation"><div class="node">3</div><div class="rname">Unsorted<span class="rcount">0/2 · Upcoming</span></div>
+        <div class="icard">cli-export — export usage as CSV</div>
+        <div class="icard">landing-page — marketing page for cairn plugin</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-swarms">
+    <div class="swarm-list">
+      <div class="swarm-card">
+        <div class="swarm-top">
+          <span class="swarm-slug">2026-08-19-dashboard-react-redesign</span>
+          <span class="phase-pill handoff">Handoff Needed</span>
+        </div>
+        <div class="swarm-meta">
+          <span><span class="k">Branch</span><span class="mono">feature/dashboard-react-redesign</span></span>
+          <span><span class="k">Worktree</span><span class="mono">.claude/worktrees/dashboard-react</span></span>
+          <span><span class="dot alive"></span>tmux alive</span>
+        </div>
+        <button class="pane-toggle" onclick="var pt=this.nextElementSibling; var open = pt.style.display==='block'; pt.style.display = open ? 'none' : 'block'; this.textContent = open ? 'Show pane tail' : 'Hide pane tail';">Show pane tail</button>
+        <div class="pane-tail" style="display:none">qa-engineer: feasibility check flagged an ambiguity in
+FR-007 (date-range scope). Waiting on a decision — proceed
+with client-side recompute as specced, or reopen the FR?
+
+Phase: QA-RED → HANDOFF NEEDED
+Awaiting: human decision on scope ambiguity</div>
+      </div>
+
+      <div class="swarm-card">
+        <div class="swarm-top">
+          <span class="swarm-slug">2026-08-17-notes-local-file</span>
+          <span class="phase-pill">Implement</span>
+        </div>
+        <div class="swarm-meta">
+          <span><span class="k">Branch</span><span class="mono">feature/notes-local-file</span></span>
+          <span><span class="k">Worktree</span><span class="mono">.claude/worktrees/notes-local</span></span>
+          <span><span class="dot alive"></span>tmux alive</span>
+        </div>
+        <div class="hint">No progress in 41m</div>
+      </div>
+
+      <div class="swarm-card">
+        <div class="swarm-top">
+          <span class="swarm-slug">2026-08-16-cli-export</span>
+          <span class="phase-pill">Implement</span>
+          <span class="badge stalled">Stalled</span>
+        </div>
+        <div class="swarm-meta">
+          <span><span class="k">Branch</span><span class="mono">feature/cli-export</span></span>
+          <span><span class="k">Worktree</span><span class="mono">.claude/worktrees/cli-export</span></span>
+          <span><span class="dot dead"></span>tmux dead</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  var chartData = [1.2, 1.8, 0.9, 2.6, 3.1, 4.4, 4.42];
+  var days = ['Aug 13','Aug 14','Aug 15','Aug 16','Aug 17','Aug 18','Aug 19'];
+  var svg = document.querySelector('.chart-card svg');
+  var barsG = svg.querySelector('.bars');
+  var labelsG = svg.querySelector('.labels');
+  var max = Math.max.apply(null, chartData);
+  var w = 700, h = 130, gap = 10;
+  var barW = (w / chartData.length) - gap;
+  chartData.forEach(function (v, i) {
+    var barH = (v / max) * h;
+    var x = i * (barW + gap);
+    var rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('class','bar');
+    rect.setAttribute('x', x); rect.setAttribute('y', h - barH);
+    rect.setAttribute('width', barW); rect.setAttribute('height', barH);
+    rect.setAttribute('rx', 3);
+    barsG.appendChild(rect);
+    var text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('class','axis');
+    text.setAttribute('x', x + barW/2); text.setAttribute('y', h + 16);
+    text.setAttribute('text-anchor','middle');
+    text.textContent = days[i];
+    labelsG.appendChild(text);
+  });
+
+  document.querySelectorAll('.tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(function (t) { t.setAttribute('aria-selected', t === tab ? 'true' : 'false'); });
+      document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('active'); });
+      document.getElementById('view-' + tab.dataset.view).classList.add('active');
+      document.getElementById('toolbar-usage').style.display = tab.dataset.view === 'usage' ? 'flex' : 'none';
+      document.getElementById('toolbar-tracker').style.display = tab.dataset.view === 'tracker' ? 'flex' : 'none';
+    });
+  });
+
+  document.querySelectorAll('#toolbar-usage .segmented button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('#toolbar-usage .segmented button').forEach(function (b) { b.setAttribute('aria-selected','false'); });
+      btn.setAttribute('aria-selected','true');
+    });
+  });
+
+  document.querySelectorAll('#toolbar-tracker .segmented button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('#toolbar-tracker .segmented button').forEach(function (b) { b.setAttribute('aria-selected','false'); });
+      btn.setAttribute('aria-selected','true');
+      var isBoard = btn.dataset.sub === 'board';
+      document.getElementById('board').style.display = isBoard ? 'flex' : 'none';
+      document.getElementById('road').style.display = isBoard ? 'none' : 'flex';
+    });
+  });
+</script>
+</body>
+</html>
