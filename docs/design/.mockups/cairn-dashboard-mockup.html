@@ -415,6 +415,34 @@
 
   function sessionCost(s) { return s.models.reduce(function (sum, m) { return sum + m.cost; }, 0); }
 
+  function dayStr(d) { return d.toISOString().slice(0, 10); }
+
+  // Zero-fills the chart to every day in the selected window, not just days
+  // with a session — otherwise a quiet day reads as "no x-axis tick here" or
+  // (worse) collapses the chart to look like the filter didn't change,
+  // instead of an honest $0 bar. Same reasoning as maestro's own
+  // day/week/month zero-fill in its Cumulative Spend and Tokens & Cost
+  // charts (see renderPeriodViews in that report).
+  function zeroFillDays(range) {
+    var now = new Date('2026-08-19T08:00:00Z');
+    var end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    var start;
+    if (range === 'today') {
+      start = end;
+    } else if (range === 'month') {
+      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    } else if (range === 'all') {
+      var earliest = SESSIONS.reduce(function (min, s) { return s.ts < min ? s.ts : min; }, SESSIONS[0].ts);
+      var e = new Date(earliest);
+      start = new Date(Date.UTC(e.getUTCFullYear(), e.getUTCMonth(), e.getUTCDate()));
+    } else {
+      start = new Date(end.getTime() - (Number(range) - 1) * 86400000);
+    }
+    var days = [];
+    for (var d = start; d <= end; d = new Date(d.getTime() + 86400000)) days.push(dayStr(d));
+    return days;
+  }
+
   function sessionsInRange(range) {
     if (range === 'all') return SESSIONS;
     var now = new Date('2026-08-19T08:00:00Z'); // fixed "now" so this mockup renders deterministically
@@ -469,13 +497,14 @@
     var svg = document.getElementById('usage-chart');
     var barsG = svg.querySelector('.bars'), labelsG = svg.querySelector('.labels');
     barsG.innerHTML = ''; labelsG.innerHTML = '';
-    var days = Object.keys(byDay).sort();
+    var days = zeroFillDays(range);
     if (days.length) {
-      var max = Math.max.apply(null, days.map(function (d) { return byDay[d]; }));
+      var max = Math.max.apply(null, days.map(function (d) { return byDay[d] || 0; }).concat([0.01]));
       var w = 700, h = 130, gap = Math.max(4, 10 - days.length);
       var barW = Math.max(3, (w / days.length) - gap);
       days.forEach(function (d, i) {
-        var barH = (byDay[d] / max) * h;
+        var dayCost = byDay[d] || 0;
+        var barH = (dayCost / max) * h;
         var x = i * (barW + gap);
         var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         rect.setAttribute('class', 'bar');
@@ -483,7 +512,7 @@
         rect.setAttribute('width', barW); rect.setAttribute('height', Math.max(1, barH));
         rect.setAttribute('rx', 3);
         var title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-        title.textContent = d + ': ' + usd(byDay[d]);
+        title.textContent = d + ': ' + usd(dayCost);
         rect.appendChild(title);
         barsG.appendChild(rect);
         var labelEvery = Math.max(1, Math.ceil(days.length / 8));
