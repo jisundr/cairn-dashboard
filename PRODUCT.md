@@ -37,13 +37,13 @@ Launched via `/cairn-dashboard` (a cairn plugin command), runs as a single backg
 
 ## Brand Commitments
 
-None binding. The existing inline-HTML dashboard (being replaced) had its own visual identity (parchment/cream light theme, green accent, dark mode) — explicitly **not** carried forward as a constraint; this redesign is a fresh visual direction, not a refinement of the old look.
+None binding. The old inline-HTML dashboard (now replaced) had its own visual identity (parchment/cream light theme, green accent, dark mode) — explicitly **not** carried forward as a constraint; this redesign is a fresh visual direction, not a refinement of the old look.
 
 ## Evidence on Hand
 
 - `../docs/cairn-dashboard/requirements/prd.md`, `user-stories.md`, `user-flows.md` (parent repo) — confirmed functional requirements and user stories.
 - `../docs/cairn-dashboard/architecture/architecture-spec.md` (parent repo) — confirmed system architecture, no database, two-component split with the parent repo's Python backend.
-- `docs/design/ux-spec.md` (this repo) — confirmed interaction behavior, screens, states, navigation model.
+- `../docs/cairn-dashboard/design/ux-spec.md` (parent repo) — confirmed interaction behavior, screens, states, navigation model.
 - The old inline dashboard's implementation (parent repo's `scripts/usage_dashboard.py`, pre-redesign) — functional precedent only (what data is shown), explicitly not visual precedent (see Brand Commitments above).
 
 ## Product Principles
