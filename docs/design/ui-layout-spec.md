@@ -1,7 +1,7 @@
 # UI Layout Specification: cairn-dashboard
 
 ## Metadata
-- UI Layout Specification Version: v0.5
+- UI Layout Specification Version: v0.6
 - Last Updated: 2026-08-19
 - Derived From: docs/design/ux-spec.md
 - Author:
@@ -38,7 +38,7 @@ Main Content Area (REG-3)
   └ Cost-over-time chart (24 hourly buckets for Daily; daily buckets for
                            Weekly/Monthly/YTD; monthly buckets for Yearly)
   └ Ranking lists (by-model, by-version, by-subagent, by-skill)
-  └ Sessions table
+  └ Sessions table (Model/Version filter, sortable columns, pagination)
 ```
 
 **Component Hierarchy:**
@@ -61,7 +61,9 @@ Usage Screen
       ├── RankingSection × 4 (by-model, by-version, by-subagent, by-skill)
       │    └── RankRow × N
       └── SessionsTable
-           └── SessionRow × N
+           ├── SessionsFilterBar (Model select, Version select — both default "All")
+           ├── SessionRow × N (per page; header cells sortable)
+           └── Pagination (Prev, page indicator, Next — shown only above one page)
 ```
 
 **Responsive Behavior:**
@@ -166,7 +168,7 @@ Swarms Screen
 |--------|--------|-----------|-------|
 | Usage | REG-1 | TopNav | Shared across all screens |
 | Usage | REG-2 | PeriodToolbar | 5 period buttons + anchor nav + UTC/Local toggle + info icon |
-| Usage | REG-3 | StatGrid, CostChart, UsageHeatmap, RankingSection ×4, SessionsTable | Heatmap always shows full history, independent of REG-2's period/anchor |
+| Usage | REG-3 | StatGrid, CostChart, UsageHeatmap, RankingSection ×4, SessionsTable | Heatmap always shows full history, independent of REG-2's period/anchor. SessionsTable adds its own Model/Version filter, sortable headers, and pagination on top of REG-2's period window. |
 | Tracker | REG-1 | TopNav | Shared |
 | Tracker | REG-2 | SubViewToolbar | Board/Roadmap toggle |
 | Tracker | REG-3 | BoardView or RoadmapView | Mutually exclusive, one active at a time |

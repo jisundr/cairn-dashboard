@@ -1,7 +1,7 @@
 # User Stories: cairn-dashboard
 
 ## Metadata
-- User Stories Version: v0.6
+- User Stories Version: v0.7
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md
 - Author:
@@ -13,7 +13,7 @@
 
 ## US-001 — View usage and cost
 
-**Traces to:** FR-001, FR-004, FR-007, FR-008, FR-009
+**Traces to:** FR-001, FR-004, FR-007, FR-008, FR-009, FR-010
 
 **User Story**
 As a cairn author, I want to see my Claude Code token usage and cost at a glance, so that I can track spend without reading raw transcripts.
@@ -34,6 +34,10 @@ As a cairn author, I want to see my Claude Code token usage and cost at a glance
 - [ ] A GitHub-style usage heatmap renders below the chart: one cell per day, calendar-year-aligned (Sunday-start weeks, Jan 1 of the earliest activity year through today), colored across 5 intensity levels by that day's token volume relative to the busiest day in the whole session history.
 - [ ] The heatmap always covers full session history — it does not filter with the period/anchor selector — but its day boundaries shift with the UTC/Local toggle, same as the chart.
 - [ ] Hovering a heatmap cell shows that day's date, token count, and cost.
+- [ ] Sessions table shows Model(s) and Tokens columns in addition to Session/Started/Calls/Cost/Version; Tokens shows the total, with an input/output/cache-write/cache-read breakdown on hover.
+- [ ] Clicking a sessions-table column header sorts by that column; clicking the same header again reverses direction.
+- [ ] Sessions table can be filtered by model and by cairn version (independent dropdowns, both default to "All"), scoped to the sessions already in the current period window — no refetch.
+- [ ] Sessions table is paginated with Prev/Next controls once the current window/filter has more sessions than one page.
 
 **Edge Cases**
 - No sessions in the selected window: stat grid shows zeroed values, chart/rankings/sessions table each show an empty state, not an error.
@@ -41,6 +45,8 @@ As a cairn author, I want to see my Claude Code token usage and cost at a glance
 - Navigating past the earliest recorded session (prev) or past today (next): the button disables rather than paging into an empty/future window.
 - No sessions at all (fresh install): heatmap area shows an empty-state message instead of an all-empty grid.
 - A day with zero sessions: heatmap cell renders at the lowest (empty) level, not omitted from the grid.
+- A model/version filter combination matches zero sessions in the window: table shows its empty state, not a blank body.
+- Switching period, anchor, or tz while a sort/filter/page is active: page resets to 1 (the row set changed); sort and filter selections persist across the switch.
 
 ---
 

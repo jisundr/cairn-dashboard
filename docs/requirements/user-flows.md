@@ -1,7 +1,7 @@
 # User Flows: cairn-dashboard
 
 ## Metadata
-- User Flows Version: v0.5
+- User Flows Version: v0.6
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md
 - Author:
@@ -55,11 +55,15 @@
 - Author toggles UTC/Local: bucket boundaries and all displayed timestamps shift accordingly, independent of the period/anchor.
 - Period is Daily: chart shows 24 hourly buckets for the anchored day instead of a single bar.
 - Author hovers a cell in the usage heatmap (always full history, unaffected by the period/anchor filter): a tooltip shows that day's date, tokens, and cost.
+- Author clicks a sessions-table column header: table sorts by that column (ascending, or descending on a second click), scoped to the current window's already-fetched rows.
+- Author picks a Model or Version filter above the sessions table: table narrows to matching rows within the current window, no refetch; picking "All" clears that filter.
+- Author clicks Prev/Next below the sessions table: table pages through the current (possibly filtered) row set.
 
 **Error States**
 - `/api/usage` fetch fails (server not running, network blip): UI shows a stale-data indicator on the existing view rather than freezing silently or clearing to blank.
 - Author navigates prev past the earliest recorded session, or next past today: the button disables rather than paging into an empty/future window.
 - No sessions recorded at all: the heatmap area shows an empty-state message rather than a grid of empty cells.
+- A model/version filter matches no sessions in the window: table shows its own empty state rather than a blank body.
 
 ---
 

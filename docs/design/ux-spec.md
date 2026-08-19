@@ -1,7 +1,7 @@
 # UX Specification: cairn-dashboard
 
 ## Metadata
-- UX Specification Version: v0.7
+- UX Specification Version: v0.8
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md, docs/requirements/user-flows.md
 - Author:
@@ -116,6 +116,9 @@ Direct navigation via URL hash (`#usage`, `#tracker`, `#tracker/road`, `#swarms`
 | Toggle UTC/Local | Cairn author | Bucket boundaries (hour/day/month) and every displayed timestamp shift accordingly, independent of the period/anchor selection |
 | Hover/focus the filter info icon | Cairn author | Tooltip explains the period types, anchor navigation, and the UTC/Local toggle |
 | Hover a heatmap cell | Cairn author | Tooltip shows that day's date, tokens, and cost — heatmap itself always shows full session history, independent of the period/anchor filter |
+| Click a sessions-table column header | Cairn author | Table sorts by that column ascending; clicking the same header again reverses to descending |
+| Pick a Model or Version filter above the sessions table | Cairn author | Table narrows to matching rows within the current window, no refetch; picking "All" clears that filter |
+| Click sessions-table Prev/Next | Cairn author | Table pages through the current (possibly filtered) row set |
 | (passive) Wait for the 4s poll | Cairn author | View updates in place with new usage data, no visible reload |
 
 **Permission Rules:**
@@ -124,10 +127,11 @@ Direct navigation via URL hash (`#usage`, `#tracker`, `#tracker/road`, `#swarms`
 | Entire screen | Cairn author | Always visible |
 | Prev/next navigation | Cairn author | Hidden for YTD; disabled at the earliest-session/today boundary otherwise |
 | Usage heatmap | Cairn author | Always visible once any session exists; empty-state message when there is no session history at all |
+| Sessions-table pagination | Cairn author | Shown only when the current (filtered) row set exceeds one page |
 
 **States:**
 - **Loading:** "Loading…" text shown only on the very first fetch, before any data has ever rendered.
-- **Empty:** No sessions in the selected window — stat grid shows zeroed values, chart/rankings/sessions table each show their own empty-state message, never an error. No sessions in full history at all — heatmap shows its own empty-state message instead of a blank/empty-cell grid.
+- **Empty:** No sessions in the selected window — stat grid shows zeroed values, chart/rankings/sessions table each show their own empty-state message, never an error. No sessions in full history at all — heatmap shows its own empty-state message instead of a blank/empty-cell grid. A model/version filter matching zero sessions in the window shows the sessions table's own empty state, not a blank body.
 - **Error:** A poll fails after data has already rendered once — a stale-data indicator appears on the existing (last-good) view; the screen never clears to blank or crashes.
 - **Success:** The rendered stat grid/chart/rankings/table *is* the success state — no separate confirmation affordance needed.
 
