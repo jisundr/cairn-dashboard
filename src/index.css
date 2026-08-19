@@ -291,7 +291,50 @@ th button:hover { color: var(--color-text-secondary); }
 .rank-row .bar-fill { height: 100%; background: var(--color-primary); }
 .rank-row .num { color: var(--color-text-secondary); white-space: nowrap; }
 
+/* Tracker tab — Board (kanban) + Roadmap (milestone timeline) sub-views */
+.board { display: flex; gap: .8rem; overflow-x: auto; padding-bottom: .4rem; align-items: flex-start; min-height: calc(100vh - 140px); }
+.col { flex: 0 0 240px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 10px; padding: .7rem; }
+.col h2 { font-size: 1rem; color: var(--color-text-primary); margin: .1rem .1rem .6rem; display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
+.col h2 > span:last-child { font-size: .78rem; color: var(--color-text-faint); font-weight: 400; }
+.col h2 .name { display: flex; align-items: center; gap: .4rem; }
+.col h2 .name::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--color-text-faint); flex: 0 0 auto; }
+.col-idea h2 .name::before { background: var(--color-text-faint); }
+.col-groomed h2 .name::before { background: var(--color-info); }
+.col-review h2 .name::before { background: var(--color-primary); }
+.col-progress h2 .name::before { background: var(--color-warning); }
+.col-blocked h2 .name::before { background: var(--color-error); }
+.col-done h2 .name::before { background: var(--color-success); }
+.task-card { background: var(--color-background); border: 1px solid var(--color-border); border-radius: 10px; padding: .75rem 1rem; margin-bottom: .55rem; }
+.task-card .milestone { font-size: .6875rem; color: var(--color-text-faint); text-transform: uppercase; letter-spacing: .04em; margin-bottom: .3rem; }
+.task-card .slug { font-weight: 600; font-size: .8rem; display: flex; align-items: center; gap: .4rem; }
+.task-card .slug::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--color-text-faint); flex: 0 0 auto; }
+.col-groomed .task-card .slug::before { background: var(--color-info); }
+.col-review .task-card .slug::before { background: var(--color-primary); }
+.col-progress .task-card .slug::before { background: var(--color-warning); }
+.col-blocked .task-card .slug::before { background: var(--color-error); }
+.col-done .task-card .slug::before { background: var(--color-success); }
+.task-card .scope { color: var(--color-text-secondary); font-size: .76rem; margin-top: .3rem; line-height: 1.35; }
+
+.rmap { display: flex; gap: 1.3rem; overflow-x: auto; padding: .5rem 0 1rem; align-items: flex-start; min-height: calc(100vh - 140px); }
+.rstation { flex: 0 0 230px; }
+.rnoderow { position: relative; height: 32px; display: flex; align-items: center; justify-content: center; margin-bottom: .6rem; }
+.rnoderow::before { content: ""; position: absolute; top: 50%; left: 0; right: 0; height: 2px; transform: translateY(-50%); background: var(--color-border); }
+.rstation.filled .rnoderow::before { background: var(--color-primary); }
+.rstation:first-child .rnoderow::before { left: 50%; }
+.rstation:last-child .rnoderow::before { right: 50%; }
+.rstation .node { position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: .72rem; font-weight: 700; border: 2px solid var(--color-border); background: var(--color-background); color: var(--color-text-secondary); }
+.rstation.done .node { border-color: var(--color-success); background: var(--color-success); color: #fff; }
+.rstation.active .node { border-color: var(--color-primary); color: var(--color-primary); }
+.rstation .rname { font-weight: 600; font-size: .8rem; }
+.rstation .rcount { color: var(--color-text-faint); font-size: .7rem; margin-left: .3rem; font-weight: 400; }
+.icard { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 10px; padding: .55rem .7rem; margin-top: .5rem; font-size: .76rem; display: flex; align-items: center; gap: .4rem; }
+.icard::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--color-text-faint); flex: 0 0 auto; }
+.icard.is-done::before { background: var(--color-success); }
+.icard.is-done { color: var(--color-text-secondary); }
+
 @media (max-width: 720px) {
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
   .card-grid { grid-template-columns: 1fr; }
+  .board, .rmap { flex-direction: column; }
+  .col, .rstation { flex: 1 1 auto; }
 }
