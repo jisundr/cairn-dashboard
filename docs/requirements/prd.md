@@ -24,7 +24,7 @@ cairn-dashboard is a local, single-user web dashboard giving real-time visibilit
 |---|---|---|
 | FR-001 | Usage tab: cost/token totals, cost-over-time chart, by-model/by-version/by-subagent/by-skill rankings, sessions table | Must |
 | FR-002 | Tracker tab: Board (Status-column kanban) and Roadmap (Milestone-grouped) views from `docs/.tasks/TRACKER.md` | Must |
-| FR-003 | Swarms tab: `Mode: Unattended` tasks — phase, tmux liveness, `HANDOFF NEEDED` pane tail, stalled indicator (authoritative + soft hint) | Must |
+| FR-003 | Swarms tab: `Mode: Unattended` tasks — phase, branch, worktree, tmux liveness, `HANDOFF NEEDED` pane tail, stalled indicator (authoritative + soft hint) | Must |
 | FR-004 | Frontend polls backend JSON APIs on a 4s interval for near-real-time updates | Must |
 | FR-005 | ~~Frontend ships as a static, pre-built bundle...~~ — merged into NFR-001 (non-functional constraint, not a separate user-facing behavior) | Merged |
 | FR-006 | Existing `--task-report`/`--window-report` CLI report entry points (used by `task-orchestrator`) keep working unchanged | Must |
