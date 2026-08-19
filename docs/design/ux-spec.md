@@ -1,7 +1,7 @@
 # UX Specification: cairn-dashboard
 
 ## Metadata
-- UX Specification Version: v0.4
+- UX Specification Version: v0.5
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md, docs/requirements/user-flows.md
 - Author:
@@ -155,6 +155,7 @@ Direct navigation via URL hash (`#usage`, `#tracker`, `#tracker/road`, `#swarms`
 | Click a swarm in the left list | Cairn author | Selects it; right panel opens (or swaps) to show its phase timeline, branch, worktree, elapsed time, and recent-history log |
 | Click the close control on the detail panel | Cairn author | Deselects the current swarm; right panel returns to the empty-state prompt |
 | Select a sort order (Priority / Recent activity / Name) | Cairn author | List reorders client-side, no refetch — selection persists across polls |
+| Hover/focus the sort toolbar's info icon | Cairn author | Tooltip explains what each of the 3 sort modes means |
 | (passive) Wait for the 4s poll | Cairn author | List and (if selected) detail panel update in place — phase, liveness, badges, history recompute from fresh `STATE.md`/`HISTORY.md` reads; current sort order re-applied |
 
 **Permission Rules:**
