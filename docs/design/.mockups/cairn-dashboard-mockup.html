@@ -61,7 +61,8 @@
     color: var(--text-dim); font-size: .78rem; font-weight: 500;
   }
   .segmented button[aria-selected="true"] { background: var(--bg); color: var(--text); }
-  .info-icon { color: var(--text-faint); font-size: .95rem; cursor: help; margin-left: .6rem; border-radius: 50%; }
+  .sort-control { display: flex; align-items: center; gap: .4rem; }
+  .info-icon { color: var(--text-faint); font-size: .95rem; cursor: help; border-radius: 50%; }
   .info-icon:hover, .info-icon:focus-visible { color: var(--text-dim); }
 
   main { padding: 0 1.5rem 2rem; flex: 1 1 auto; overflow-y: auto; }
@@ -236,13 +237,15 @@
   </div>
 </div>
 <div class="toolbar" id="toolbar-swarms" style="display:none">
-  <div class="segmented" role="group" aria-label="Sort order">
-    <button aria-selected="true" data-sort="priority" title="Needs attention first: Handoff Needed &rarr; Stalled &rarr; Running &rarr; Done">Priority</button>
-    <button aria-selected="false" data-sort="recent" title="Most recently updated first, regardless of state">Recent activity</button>
-    <button aria-selected="false" data-sort="name" title="Chronological by slug (oldest task first)">Name</button>
+  <div class="sort-control">
+    <div class="segmented" role="group" aria-label="Sort order">
+      <button aria-selected="true" data-sort="priority" title="Needs attention first: Handoff Needed &rarr; Stalled &rarr; Running &rarr; Done">Priority</button>
+      <button aria-selected="false" data-sort="recent" title="Most recently updated first, regardless of state">Recent activity</button>
+      <button aria-selected="false" data-sort="name" title="Chronological by slug (oldest task first)">Name</button>
+    </div>
+    <span class="info-icon" tabindex="0" role="button" aria-label="What do these sort options mean?"
+      title="Priority: needs attention first (Handoff Needed &rarr; Stalled &rarr; Running &rarr; Done).&#10;Recent activity: most recently updated first, regardless of state.&#10;Name: chronological by slug (oldest task first).">&#9432;</span>
   </div>
-  <span class="info-icon" tabindex="0" role="button" aria-label="What do these sort options mean?"
-    title="Priority: needs attention first (Handoff Needed &rarr; Stalled &rarr; Running &rarr; Done).&#10;Recent activity: most recently updated first, regardless of state.&#10;Name: chronological by slug (oldest task first).">&#9432;</span>
 </div>
 
 <main>
