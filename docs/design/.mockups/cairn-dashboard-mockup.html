@@ -24,6 +24,10 @@
   }
 
   * { box-sizing: border-box; }
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+    .pulse { animation: pulse 1.8s ease-in-out infinite; }
+  }
   button:focus-visible, .pane-toggle:focus-visible, [role="tab"]:focus-visible {
     outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px;
   }
@@ -509,10 +513,19 @@
     return -1;
   }
 
+  // "Running" = actively executing right now, not paused/stalled/finished —
+  // this is the only state that earns the pulse animation.
+  function isRunning(s) {
+    return !isStalled(s.status) && s.phase !== 'PUBLISH' && s.phase !== 'HANDOFF NEEDED';
+  }
+
   function renderMiniProgress(s) {
     var pos = pipelinePosition(s);
+    var running = isRunning(s);
     return '<div class="mini-progress">' + CHAIN_PHASES.map(function (_, i) {
-      return '<span class="seg' + (pos !== -1 && i <= pos ? ' filled' : '') + '"></span>';
+      if (pos === -1 || i > pos) return '<span class="seg"></span>';
+      var cls = 'seg filled' + (i === pos && running ? ' pulse' : '');
+      return '<span class="' + cls + '"></span>';
     }).join('') + '</div>';
   }
 
@@ -522,8 +535,9 @@
   function renderTimeline(s) {
     var currentIndex = pipelinePosition(s);
     var atLabel = s.phase === 'HANDOFF NEEDED' ? 'paused' : 'current';
+    var running = isRunning(s);
     return CHAIN_PHASES.map(function (p, i) {
-      var cls = i === currentIndex ? 'step ' + atLabel : (i <= currentIndex ? 'step done' : 'step');
+      var cls = i === currentIndex ? 'step ' + atLabel + (running ? ' pulse' : '') : (i <= currentIndex ? 'step done' : 'step');
       var label = (i === currentIndex && atLabel === 'paused') ? p + ' ⏸' : p;
       var arrow = i < CHAIN_PHASES.length - 1 ? '<span class="arrow">→</span>' : '';
       return '<span class="' + cls + '">' + label + '</span>' + arrow;
@@ -533,6 +547,7 @@
   function renderSwarmList() {
     document.getElementById('swarm-list').innerHTML = SWARMS.map(function (s) {
       var pill = isStalled(s.status) ? { text: 'Stalled', cls: 'phase-pill stalled' } : phaseLabel(s.phase);
+      if (isRunning(s)) pill.cls += ' pulse';
       var dotCls = s.tmux === 'alive' ? 'dot alive' : (s.tmux === 'dead' ? 'dot dead' : 'dot unknown');
       var selCls = s.slug === selectedSwarm ? ' selected' : '';
       return '<div class="swarm-list-item' + selCls + '" data-slug="' + s.slug + '">' +
