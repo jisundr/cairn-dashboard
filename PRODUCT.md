@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-Vite + React + TypeScript (static build, no server-side rendering). Committed build output (`dist/`), no build step required at runtime — decided in `docs/architecture/architecture-spec.md`.
+Vite + React + TypeScript (static build, no server-side rendering). Committed build output (`dist/`), no build step required at runtime — decided in `../docs/cairn-dashboard/architecture/architecture-spec.md` (parent repo).
 
 ## Users
 
@@ -41,8 +41,8 @@ None binding. The existing inline-HTML dashboard (being replaced) had its own vi
 
 ## Evidence on Hand
 
-- `docs/requirements/prd.md`, `user-stories.md`, `user-flows.md` (this repo) — confirmed functional requirements and user stories.
-- `docs/architecture/architecture-spec.md` (this repo) — confirmed system architecture, no database, two-component split with the parent repo's Python backend.
+- `../docs/cairn-dashboard/requirements/prd.md`, `user-stories.md`, `user-flows.md` (parent repo) — confirmed functional requirements and user stories.
+- `../docs/cairn-dashboard/architecture/architecture-spec.md` (parent repo) — confirmed system architecture, no database, two-component split with the parent repo's Python backend.
 - `docs/design/ux-spec.md` (this repo) — confirmed interaction behavior, screens, states, navigation model.
 - The old inline dashboard's implementation (parent repo's `scripts/usage_dashboard.py`, pre-redesign) — functional precedent only (what data is shown), explicitly not visual precedent (see Brand Commitments above).
 
