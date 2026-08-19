@@ -120,35 +120,65 @@
   .icard { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: .4rem .55rem; margin-top: .5rem; font-size: .76rem; }
   .icard.is-done { color: var(--text-faint); text-decoration: line-through; }
 
-  /* Swarms */
-  .swarm-list { display: flex; flex-direction: column; gap: .8rem; margin-top: 1rem; }
-  .swarm-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: .95rem 1.1rem; }
-  .swarm-top { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: .5rem; }
-  .swarm-slug { font-weight: 700; font-size: .86rem; }
-  .phase-pill { font-size: .68rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; padding: .18rem .55rem; border-radius: 99px; background: var(--bg); color: var(--text-dim); border: 1px solid var(--border); }
+  /* Swarms: list + detail split */
+  .swarms-layout { display: flex; gap: 1rem; align-items: flex-start; margin-top: 1rem; }
+  .swarm-list-pane { flex: 0 0 38%; display: flex; flex-direction: column; gap: .5rem; }
+  .swarm-detail-pane { flex: 1 1 62%; min-width: 0; }
+
+  .swarm-list-item {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: .65rem .8rem; cursor: pointer;
+  }
+  .swarm-list-item.selected { border-color: var(--primary); background: var(--bg); }
+  .swarm-list-item .row1 { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+  .swarm-list-item .slug { font-weight: 700; font-size: .84rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .swarm-list-item .row2 { display: flex; align-items: center; gap: .5rem; margin-top: .3rem; font-size: .74rem; color: var(--text-dim); }
+
+  .phase-pill { font-size: .66rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; padding: .16rem .5rem; border-radius: 99px; background: var(--bg); color: var(--text-dim); border: 1px solid var(--border); flex: 0 0 auto; }
   .phase-pill.handoff { background: var(--warning); color: #fff; border-color: transparent; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: .35rem; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
   .dot.alive { background: var(--success); }
   .dot.dead { background: var(--error); }
   .dot.unknown { background: var(--text-faint); }
-  .swarm-meta { display: flex; gap: 1.3rem; flex-wrap: wrap; color: var(--text-dim); font-size: .78rem; margin-bottom: .5rem; }
-  .swarm-meta .k { color: var(--text-faint); margin-right: .35rem; }
-  .badge { display: inline-flex; align-items: center; gap: .3rem; font-size: .74rem; font-weight: 600; padding: .2rem .55rem; border-radius: 99px; }
+
+  .detail-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem 1.2rem; }
+  .detail-slug { font-size: 1rem; font-weight: 700; margin-bottom: .9rem; }
+
+  .timeline { display: flex; flex-wrap: wrap; align-items: center; gap: .15rem; margin-bottom: 1rem; font-size: .74rem; }
+  .timeline .step { padding: .15rem .5rem; border-radius: 99px; color: var(--text-faint); }
+  .timeline .step.done { color: var(--text-dim); }
+  .timeline .step.current { color: #fff; background: var(--primary); font-weight: 700; }
+  .timeline .arrow { color: var(--border); font-size: .7rem; }
+
+  .detail-meta { display: flex; gap: 1.5rem; flex-wrap: wrap; color: var(--text-dim); font-size: .8rem; margin-bottom: .7rem; }
+  .detail-meta .k { color: var(--text-faint); margin-right: .35rem; }
+
+  .badge { display: inline-flex; align-items: center; gap: .3rem; font-size: .74rem; font-weight: 600; padding: .2rem .55rem; border-radius: 99px; margin-bottom: .8rem; }
   .badge.stalled { background: var(--error); color: #fff; }
-  .hint { color: var(--text-faint); font-size: .78rem; }
+  .hint { color: var(--text-faint); font-size: .78rem; margin-bottom: .8rem; display: block; }
+
+  .detail-subhead { font-size: .68rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; margin: 1rem 0 .5rem; }
+  .history-log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .45rem; }
+  .history-log li { display: flex; gap: .6rem; font-size: .8rem; align-items: baseline; }
+  .history-log .hphase { font-weight: 600; color: var(--text); flex: 0 0 auto; }
+  .history-log .hnote { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .history-log .htime { color: var(--text-faint); font-size: .72rem; margin-left: auto; flex: 0 0 auto; }
+
   .pane-tail {
-    margin-top: .6rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    margin-top: .3rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
     padding: .6rem .7rem; font-size: .74rem; line-height: 1.5; color: var(--text-dim); white-space: pre-wrap;
   }
-  .pane-toggle { background: none; border: none; color: var(--primary); font-size: .76rem; font-weight: 600; cursor: pointer; padding: 0; margin-top: .3rem; }
 
   .empty { color: var(--text-faint); font-size: .84rem; padding: 2rem 0; text-align: center; }
+  .detail-empty { background: var(--surface); border: 1px dashed var(--border); border-radius: 10px; padding: 3rem 1rem; color: var(--text-faint); font-size: .84rem; text-align: center; }
 
   @media (max-width: 720px) {
     .stat-grid { grid-template-columns: repeat(2, 1fr); }
     .card-grid { grid-template-columns: 1fr; }
     .board, .rmap { flex-direction: column; }
     .col, .rstation { flex: 1 1 auto; }
+    .swarms-layout { flex-direction: column; }
+    .swarm-list-pane { flex: 1 1 auto; }
   }
 </style>
 </head>
@@ -277,51 +307,9 @@
   </section>
 
   <section class="view" id="view-swarms">
-    <div class="swarm-list">
-      <div class="swarm-card">
-        <div class="swarm-top">
-          <span class="swarm-slug">2026-08-19-dashboard-react-redesign</span>
-          <span class="phase-pill handoff">Handoff Needed</span>
-        </div>
-        <div class="swarm-meta">
-          <span><span class="k">Branch</span><span class="mono">feature/dashboard-react-redesign</span></span>
-          <span><span class="k">Worktree</span><span class="mono">.claude/worktrees/dashboard-react</span></span>
-          <span><span class="dot alive"></span>tmux alive</span>
-        </div>
-        <button class="pane-toggle" onclick="var pt=this.nextElementSibling; var open = pt.style.display==='block'; pt.style.display = open ? 'none' : 'block'; this.textContent = open ? 'Show pane tail' : 'Hide pane tail';">Show pane tail</button>
-        <div class="pane-tail" style="display:none">qa-engineer: feasibility check flagged an ambiguity in
-FR-007 (date-range scope). Waiting on a decision — proceed
-with client-side recompute as specced, or reopen the FR?
-
-Phase: QA-RED → HANDOFF NEEDED
-Awaiting: human decision on scope ambiguity</div>
-      </div>
-
-      <div class="swarm-card">
-        <div class="swarm-top">
-          <span class="swarm-slug">2026-08-17-notes-local-file</span>
-          <span class="phase-pill">Implement</span>
-        </div>
-        <div class="swarm-meta">
-          <span><span class="k">Branch</span><span class="mono">feature/notes-local-file</span></span>
-          <span><span class="k">Worktree</span><span class="mono">.claude/worktrees/notes-local</span></span>
-          <span><span class="dot alive"></span>tmux alive</span>
-        </div>
-        <div class="hint">No progress in 41m</div>
-      </div>
-
-      <div class="swarm-card">
-        <div class="swarm-top">
-          <span class="swarm-slug">2026-08-16-cli-export</span>
-          <span class="phase-pill">Implement</span>
-          <span class="badge stalled">Stalled</span>
-        </div>
-        <div class="swarm-meta">
-          <span><span class="k">Branch</span><span class="mono">feature/cli-export</span></span>
-          <span><span class="k">Worktree</span><span class="mono">.claude/worktrees/cli-export</span></span>
-          <span><span class="dot dead"></span>tmux dead</span>
-        </div>
-      </div>
+    <div class="swarms-layout">
+      <div class="swarm-list-pane" id="swarm-list"></div>
+      <div class="swarm-detail-pane" id="swarm-detail"></div>
     </div>
   </section>
 </main>
@@ -394,6 +382,124 @@ Awaiting: human decision on scope ambiguity</div>
   });
 
   setTab.apply(null, tabFromHash().concat([false]));
+
+  // Swarms: list + detail
+  var CHAIN_PHASES = ['PLAN', 'DOC-GATE', 'QA-RED', 'IMPLEMENT', 'QA-AUDIT', 'DOC-POST-IMPL', 'PUBLISH'];
+  var SWARMS = [
+    {
+      slug: '2026-08-19-dashboard-react-redesign',
+      phase: 'HANDOFF NEEDED',
+      status: 'waiting on a decision',
+      branch: 'feature/dashboard-react-redesign',
+      worktree: '.claude/worktrees/dashboard-react',
+      tmux: 'alive',
+      lastActivity: '4m ago',
+      recentHistory: [
+        { phase: 'QA-RED', note: 'feasibility check flagged an ambiguity', time: '4m ago' },
+        { phase: 'DOC-GATE', note: 'doc gate clean, no findings', time: '22m ago' },
+        { phase: 'PLAN', note: 'plan read, worktree created', time: '31m ago' },
+      ],
+      paneTail: 'qa-engineer: feasibility check flagged an ambiguity in\n' +
+        'FR-007 (date-range scope). Waiting on a decision — proceed\n' +
+        'with client-side recompute as specced, or reopen the FR?\n\n' +
+        'Phase: QA-RED → HANDOFF NEEDED\n' +
+        'Awaiting: human decision on scope ambiguity',
+    },
+    {
+      slug: '2026-08-17-notes-local-file',
+      phase: 'IMPLEMENT',
+      status: 'working',
+      branch: 'feature/notes-local-file',
+      worktree: '.claude/worktrees/notes-local',
+      tmux: 'alive',
+      lastActivity: '41m ago',
+      recentHistory: [
+        { phase: 'IMPLEMENT', note: 'writing .harness/notes.local.md handling', time: '41m ago' },
+        { phase: 'QA-RED', note: 'tests written, 4 failing as expected', time: '1h ago' },
+        { phase: 'DOC-GATE', note: 'doc gate clean, no findings', time: '1h ago' },
+        { phase: 'PLAN', note: 'plan read, worktree created', time: '1h ago' },
+      ],
+      paneTail: null,
+    },
+    {
+      slug: '2026-08-16-cli-export',
+      phase: 'IMPLEMENT',
+      status: 'STALLED (2026-08-16T14:20:00Z) — no progress',
+      branch: 'feature/cli-export',
+      worktree: '.claude/worktrees/cli-export',
+      tmux: 'dead',
+      lastActivity: '3h ago',
+      recentHistory: [
+        { phase: 'IMPLEMENT', note: 'no further HISTORY.md progress', time: '3h ago' },
+        { phase: 'QA-RED', note: 'tests written, 2 failing as expected', time: '3h ago' },
+        { phase: 'PLAN', note: 'plan read, worktree created', time: '4h ago' },
+      ],
+      paneTail: null,
+    },
+  ];
+  var selectedSwarm = SWARMS[0].slug;
+
+  function isStalled(status) { return status.indexOf('STALLED (') === 0; }
+
+  function renderTimeline(phase) {
+    var currentIndex = CHAIN_PHASES.indexOf(phase);
+    return CHAIN_PHASES.map(function (p, i) {
+      var cls = i === currentIndex ? 'step current' : (currentIndex === -1 || i <= currentIndex ? 'step done' : 'step');
+      var arrow = i < CHAIN_PHASES.length - 1 ? '<span class="arrow">→</span>' : '';
+      return '<span class="' + cls + '">' + p + '</span>' + arrow;
+    }).join('');
+  }
+
+  function renderSwarmList() {
+    document.getElementById('swarm-list').innerHTML = SWARMS.map(function (s) {
+      var pillCls = s.phase === 'HANDOFF NEEDED' ? 'phase-pill handoff' : 'phase-pill';
+      var pillLabel = s.phase === 'HANDOFF NEEDED' ? 'Handoff Needed' : (s.phase.charAt(0) + s.phase.slice(1).toLowerCase());
+      var dotCls = s.tmux === 'alive' ? 'dot alive' : (s.tmux === 'dead' ? 'dot dead' : 'dot unknown');
+      var selCls = s.slug === selectedSwarm ? ' selected' : '';
+      return '<div class="swarm-list-item' + selCls + '" data-slug="' + s.slug + '">' +
+        '<div class="row1"><span class="slug">' + s.slug + '</span><span class="' + pillCls + '">' + pillLabel + '</span></div>' +
+        '<div class="row2"><span class="' + dotCls + '"></span>tmux ' + s.tmux + '<span>·</span>' + s.lastActivity + '</div>' +
+        '</div>';
+    }).join('');
+    document.querySelectorAll('.swarm-list-item').forEach(function (el) {
+      el.addEventListener('click', function () {
+        selectedSwarm = el.dataset.slug;
+        renderSwarmList();
+        renderSwarmDetail();
+      });
+    });
+  }
+
+  function renderSwarmDetail() {
+    var s = SWARMS.filter(function (x) { return x.slug === selectedSwarm; })[0];
+    var el = document.getElementById('swarm-detail');
+    if (!s) { el.innerHTML = '<div class="detail-empty">Select a swarm to see details.</div>'; return; }
+    var statusBlock = isStalled(s.status)
+      ? '<span class="badge stalled">' + s.status + '</span>'
+      : (s.phase !== 'HANDOFF NEEDED' && s.phase !== 'PUBLISH' ? '<span class="hint">No progress in ' + s.lastActivity.replace(' ago', '') + '</span>' : '');
+    var historyHtml = s.recentHistory.map(function (h) {
+      return '<li><span class="hphase">' + h.phase + '</span><span class="hnote">' + h.note + '</span><span class="htime">' + h.time + '</span></li>';
+    }).join('');
+    var paneTailHtml = (s.phase === 'HANDOFF NEEDED' && s.paneTail)
+      ? '<div class="detail-subhead">Pane tail</div><div class="pane-tail">' + s.paneTail + '</div>'
+      : '';
+    el.innerHTML = '<div class="detail-card">' +
+      '<div class="detail-slug">' + s.slug + '</div>' +
+      '<div class="timeline">' + renderTimeline(s.phase) + '</div>' +
+      '<div class="detail-meta">' +
+      '<span><span class="k">Branch</span><span class="mono">' + s.branch + '</span></span>' +
+      '<span><span class="k">Worktree</span><span class="mono">' + s.worktree + '</span></span>' +
+      '<span><span class="k">Last activity</span>' + s.lastActivity + '</span>' +
+      '</div>' +
+      statusBlock +
+      '<div class="detail-subhead">Recent history</div>' +
+      '<ul class="history-log">' + historyHtml + '</ul>' +
+      paneTailHtml +
+      '</div>';
+  }
+
+  renderSwarmList();
+  renderSwarmDetail();
 </script>
 </body>
 </html>
