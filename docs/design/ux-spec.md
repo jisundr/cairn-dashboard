@@ -1,7 +1,7 @@
 # UX Specification: cairn-dashboard
 
 ## Metadata
-- UX Specification Version: v0.6
+- UX Specification Version: v0.7
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md, docs/requirements/user-flows.md
 - Author:
@@ -52,6 +52,11 @@ flowchart TD
     Render --> RangeSwitch["Author switches period,\nnavigates anchor, or toggles tz"]
     RangeSwitch --> Recompute["Recompute client-side,\ncalendar-aligned, no refetch"]
     Recompute --> Render
+    Fetch --> HasHistory{"Any sessions\nin full history?"}
+    HasHistory -->|Yes| Heatmap["Render full-history\ncontribution heatmap"]
+    HasHistory -->|No| EmptyHeatmap["Show heatmap empty state"]
+    Heatmap --> TzToggle["Author toggles UTC/Local"]
+    TzToggle --> Heatmap
     Render --> Poll4s["4s poll tick"]
     Poll4s -->|Success| Render
     Poll4s -->|Fetch fails| Stale["Show stale-data indicator\non existing view"]
@@ -110,6 +115,7 @@ Direct navigation via URL hash (`#usage`, `#tracker`, `#tracker/road`, `#swarms`
 | Click "Latest" | Cairn author | Anchor jumps back to today |
 | Toggle UTC/Local | Cairn author | Bucket boundaries (hour/day/month) and every displayed timestamp shift accordingly, independent of the period/anchor selection |
 | Hover/focus the filter info icon | Cairn author | Tooltip explains the period types, anchor navigation, and the UTC/Local toggle |
+| Hover a heatmap cell | Cairn author | Tooltip shows that day's date, tokens, and cost — heatmap itself always shows full session history, independent of the period/anchor filter |
 | (passive) Wait for the 4s poll | Cairn author | View updates in place with new usage data, no visible reload |
 
 **Permission Rules:**
@@ -117,10 +123,11 @@ Direct navigation via URL hash (`#usage`, `#tracker`, `#tracker/road`, `#swarms`
 |-----------------|------|------------|
 | Entire screen | Cairn author | Always visible |
 | Prev/next navigation | Cairn author | Hidden for YTD; disabled at the earliest-session/today boundary otherwise |
+| Contribution heatmap | Cairn author | Always visible once any session exists; empty-state message when there is no session history at all |
 
 **States:**
 - **Loading:** "Loading…" text shown only on the very first fetch, before any data has ever rendered.
-- **Empty:** No sessions in the selected window — stat grid shows zeroed values, chart/rankings/sessions table each show their own empty-state message, never an error.
+- **Empty:** No sessions in the selected window — stat grid shows zeroed values, chart/rankings/sessions table each show their own empty-state message, never an error. No sessions in full history at all — heatmap shows its own empty-state message instead of a blank/empty-cell grid.
 - **Error:** A poll fails after data has already rendered once — a stale-data indicator appears on the existing (last-good) view; the screen never clears to blank or crashes.
 - **Success:** The rendered stat grid/chart/rankings/table *is* the success state — no separate confirmation affordance needed.
 

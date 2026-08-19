@@ -1,7 +1,7 @@
 # User Flows: cairn-dashboard
 
 ## Metadata
-- User Flows Version: v0.4
+- User Flows Version: v0.5
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md
 - Author:
@@ -54,10 +54,12 @@
 - Author clicks "Latest": anchor jumps back to today.
 - Author toggles UTC/Local: bucket boundaries and all displayed timestamps shift accordingly, independent of the period/anchor.
 - Period is Daily: chart shows 24 hourly buckets for the anchored day instead of a single bar.
+- Author hovers a cell in the contribution heatmap (always full history, unaffected by the period/anchor filter): a tooltip shows that day's date, tokens, and cost.
 
 **Error States**
 - `/api/usage` fetch fails (server not running, network blip): UI shows a stale-data indicator on the existing view rather than freezing silently or clearing to blank.
 - Author navigates prev past the earliest recorded session, or next past today: the button disables rather than paging into an empty/future window.
+- No sessions recorded at all: the heatmap area shows an empty-state message rather than a grid of empty cells.
 
 ---
 

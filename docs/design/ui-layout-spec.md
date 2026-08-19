@@ -1,7 +1,7 @@
 # UI Layout Specification: cairn-dashboard
 
 ## Metadata
-- UI Layout Specification Version: v0.4
+- UI Layout Specification Version: v0.5
 - Last Updated: 2026-08-19
 - Derived From: docs/design/ux-spec.md
 - Author:
@@ -34,6 +34,8 @@ Main Content Area (REG-3)
   └ Stat Grid (cost, tokens, calls, sessions, cache-hit)
   └ Cost-over-time chart (24 hourly buckets for Daily; daily buckets for
                            Weekly/Monthly/YTD; monthly buckets for Yearly)
+  └ Contribution heatmap (full history, Sunday-start weeks, month labels;
+                           independent of period/anchor, re-buckets on tz toggle)
   └ Ranking lists (by-model, by-version, by-subagent, by-skill)
   └ Sessions table
 ```
@@ -51,6 +53,10 @@ Usage Screen
       ├── StatGrid
       │    └── StatTile × 5
       ├── CostChart
+      ├── ContributionHeatmap
+      │    ├── MonthLabelRow
+      │    └── WeekColumn × N
+      │         └── DayCell × 7 (empty-padding cells at the grid's edges)
       ├── RankingSection × 4 (by-model, by-version, by-subagent, by-skill)
       │    └── RankRow × N
       └── SessionsTable
@@ -159,7 +165,7 @@ Swarms Screen
 |--------|--------|-----------|-------|
 | Usage | REG-1 | TopNav | Shared across all screens |
 | Usage | REG-2 | PeriodToolbar | 5 period buttons + anchor nav + UTC/Local toggle + info icon |
-| Usage | REG-3 | StatGrid, CostChart, RankingSection ×4, SessionsTable | |
+| Usage | REG-3 | StatGrid, CostChart, ContributionHeatmap, RankingSection ×4, SessionsTable | Heatmap always shows full history, independent of REG-2's period/anchor |
 | Tracker | REG-1 | TopNav | Shared |
 | Tracker | REG-2 | SubViewToolbar | Board/Roadmap toggle |
 | Tracker | REG-3 | BoardView or RoadmapView | Mutually exclusive, one active at a time |

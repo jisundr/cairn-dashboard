@@ -1,7 +1,7 @@
 # User Stories: cairn-dashboard
 
 ## Metadata
-- User Stories Version: v0.5
+- User Stories Version: v0.6
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md
 - Author:
@@ -13,7 +13,7 @@
 
 ## US-001 — View usage and cost
 
-**Traces to:** FR-001, FR-004, FR-007, FR-008
+**Traces to:** FR-001, FR-004, FR-007, FR-008, FR-009
 
 **User Story**
 As a cairn author, I want to see my Claude Code token usage and cost at a glance, so that I can track spend without reading raw transcripts.
@@ -31,11 +31,16 @@ As a cairn author, I want to see my Claude Code token usage and cost at a glance
 - [ ] Author can toggle displayed times between UTC and Local; this shifts hour/day/month bucket boundaries and all displayed timestamps, independent of the period/anchor selection.
 - [ ] The view updates within 4 seconds of new usage occurring (poll interval).
 - [ ] A note is shown when one or more calls used a model with no pricing entry, distinct from the cost total.
+- [ ] A GitHub-style contribution heatmap renders below the chart: one cell per day, calendar-year-aligned (Sunday-start weeks, Jan 1 of the earliest activity year through today), colored across 5 intensity levels by that day's token volume relative to the busiest day in the whole session history.
+- [ ] The heatmap always covers full session history — it does not filter with the period/anchor selector — but its day boundaries shift with the UTC/Local toggle, same as the chart.
+- [ ] Hovering a heatmap cell shows that day's date, token count, and cost.
 
 **Edge Cases**
 - No sessions in the selected window: stat grid shows zeroed values, chart/rankings/sessions table each show an empty state, not an error.
 - A model absent from the pricing table: excluded from cost total, surfaced via the unpriced-calls note, not silently $0.
 - Navigating past the earliest recorded session (prev) or past today (next): the button disables rather than paging into an empty/future window.
+- No sessions at all (fresh install): heatmap area shows an empty-state message instead of an all-empty grid.
+- A day with zero sessions: heatmap cell renders at the lowest (empty) level, not omitted from the grid.
 
 ---
 
