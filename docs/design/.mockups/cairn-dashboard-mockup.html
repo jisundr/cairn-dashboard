@@ -142,7 +142,10 @@
   .dot.unknown { background: var(--text-faint); }
 
   .detail-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem 1.2rem; }
-  .detail-slug { font-size: 1rem; font-weight: 700; margin-bottom: .9rem; }
+  .detail-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .9rem; }
+  .detail-slug { font-size: 1rem; font-weight: 700; }
+  .detail-close { background: none; border: none; color: var(--text-faint); font-size: 1.1rem; line-height: 1; cursor: pointer; padding: .2rem .4rem; border-radius: 6px; }
+  .detail-close:hover { color: var(--text); background: var(--bg); }
 
   .timeline { display: flex; flex-wrap: wrap; align-items: center; gap: .15rem; margin-bottom: 1rem; font-size: .74rem; }
   .timeline .step { padding: .15rem .5rem; border-radius: 99px; color: var(--text-faint); }
@@ -484,7 +487,8 @@
       ? '<div class="detail-subhead">Pane tail</div><div class="pane-tail">' + s.paneTail + '</div>'
       : '';
     el.innerHTML = '<div class="detail-card">' +
-      '<div class="detail-slug">' + s.slug + '</div>' +
+      '<div class="detail-head"><div class="detail-slug">' + s.slug + '</div>' +
+      '<button class="detail-close" id="detail-close-btn" aria-label="Close detail panel">&times;</button></div>' +
       '<div class="timeline">' + renderTimeline(s.phase) + '</div>' +
       '<div class="detail-meta">' +
       '<span><span class="k">Branch</span><span class="mono">' + s.branch + '</span></span>' +
@@ -496,6 +500,11 @@
       '<ul class="history-log">' + historyHtml + '</ul>' +
       paneTailHtml +
       '</div>';
+    document.getElementById('detail-close-btn').addEventListener('click', function () {
+      selectedSwarm = null;
+      renderSwarmList();
+      renderSwarmDetail();
+    });
   }
 
   renderSwarmList();

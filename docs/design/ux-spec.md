@@ -1,7 +1,7 @@
 # UX Specification: cairn-dashboard
 
 ## Metadata
-- UX Specification Version: v0.2
+- UX Specification Version: v0.3
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md, docs/requirements/user-flows.md
 - Author:
@@ -89,6 +89,7 @@ flowchart TD
 | Tracker screen | Click "Roadmap" sub-tab | Tracker screen, Roadmap view | Always available |
 | Usage screen | Click a date-range button | Usage screen, recomputed | Always available |
 | Swarms screen | Click a swarm in the left list | Swarms screen, detail panel opens/swaps on the right | Always available |
+| Swarms screen | Click the detail panel's close control | Swarms screen, detail panel returns to empty state | Only when a swarm is selected |
 
 Direct navigation via URL hash (`#usage`, `#tracker`, `#tracker/road`, `#swarms`) lands on the same screen/sub-view without going through the tab bar — supports refresh and shared links.
 
@@ -151,6 +152,7 @@ Direct navigation via URL hash (`#usage`, `#tracker`, `#tracker/road`, `#swarms`
 | Action | Available To | System Response |
 |--------|-------------|-----------------|
 | Click a swarm in the left list | Cairn author | Selects it; right panel opens (or swaps) to show its phase timeline, branch, worktree, elapsed time, and recent-history log |
+| Click the close control on the detail panel | Cairn author | Deselects the current swarm; right panel returns to the empty-state prompt |
 | (passive) Wait for the 4s poll | Cairn author | List and (if selected) detail panel update in place — phase, liveness, badges, history recompute from fresh `STATE.md`/`HISTORY.md` reads |
 
 **Permission Rules:**
