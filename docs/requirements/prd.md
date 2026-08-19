@@ -1,7 +1,7 @@
 # Product Requirements Document: cairn-dashboard
 
 ## Metadata
-- PRD Version: v0.7
+- PRD Version: v0.8
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/project-definition.md
 - Author:
@@ -32,6 +32,7 @@ cairn-dashboard is a local, single-user web dashboard giving real-time visibilit
 | FR-008 | Daily period shows an hour-by-hour (24-bucket) chart for the anchored day, not a single bar | Must |
 | FR-009 | Usage tab shows a GitHub-style usage heatmap (calendar grid, one cell per day, colored by token-volume intensity) covering full session history — independent of the period/anchor filter, but re-bucketed on UTC/Local toggle | Should |
 | FR-010 | Sessions table is sortable (click a column header), filterable by model and by cairn version (within the current period window), paginated, and shows a Model(s) column and a Tokens column (input/output/cache breakdown on hover) in addition to Session/Started/Calls/Cost/Version | Should |
+| FR-011 | Cost-over-time chart has a Cost/Tokens metric toggle — replots the same bucketed window against the chosen metric, client-side, no refetch | Should |
 
 ## Non-Functional Requirements
 | ID | Category | Requirement |

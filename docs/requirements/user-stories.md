@@ -1,7 +1,7 @@
 # User Stories: cairn-dashboard
 
 ## Metadata
-- User Stories Version: v0.7
+- User Stories Version: v0.8
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md
 - Author:
@@ -13,7 +13,7 @@
 
 ## US-001 — View usage and cost
 
-**Traces to:** FR-001, FR-004, FR-007, FR-008, FR-009, FR-010
+**Traces to:** FR-001, FR-004, FR-007, FR-008, FR-009, FR-010, FR-011
 
 **User Story**
 As a cairn author, I want to see my Claude Code token usage and cost at a glance, so that I can track spend without reading raw transcripts.
@@ -38,6 +38,7 @@ As a cairn author, I want to see my Claude Code token usage and cost at a glance
 - [ ] Clicking a sessions-table column header sorts by that column; clicking the same header again reverses direction.
 - [ ] Sessions table can be filtered by model and by cairn version (independent dropdowns, both default to "All"), scoped to the sessions already in the current period window — no refetch.
 - [ ] Sessions table is paginated with Prev/Next controls once the current window/filter has more sessions than one page.
+- [ ] The cost-over-time chart has a Cost/Tokens toggle; switching it replots the same bucketed window against the chosen metric, no refetch.
 
 **Edge Cases**
 - No sessions in the selected window: stat grid shows zeroed values, chart/rankings/sessions table each show an empty state, not an error.

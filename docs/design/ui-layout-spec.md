@@ -1,7 +1,7 @@
 # UI Layout Specification: cairn-dashboard
 
 ## Metadata
-- UI Layout Specification Version: v0.6
+- UI Layout Specification Version: v0.7
 - Last Updated: 2026-08-19
 - Derived From: docs/design/ux-spec.md
 - Author:
@@ -35,8 +35,9 @@ Main Content Area (REG-3)
                     shown first because it does not respond to REG-2's
                     period/anchor filter, only re-buckets on tz toggle)
   └ Stat Grid (cost, tokens, calls, sessions, cache-hit)
-  └ Cost-over-time chart (24 hourly buckets for Daily; daily buckets for
-                           Weekly/Monthly/YTD; monthly buckets for Yearly)
+  └ Cost-over-time chart (Cost/Tokens metric toggle; 24 hourly buckets for
+                           Daily; daily buckets for Weekly/Monthly/YTD;
+                           monthly buckets for Yearly)
   └ Ranking lists (by-model, by-version, by-subagent, by-skill)
   └ Sessions table (Model/Version filter, sortable columns, pagination)
 ```
@@ -58,6 +59,7 @@ Usage Screen
       ├── StatGrid
       │    └── StatTile × 5
       ├── CostChart
+      │    └── MetricToggle (Cost, Tokens)
       ├── RankingSection × 4 (by-model, by-version, by-subagent, by-skill)
       │    └── RankRow × N
       └── SessionsTable
