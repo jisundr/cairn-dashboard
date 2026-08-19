@@ -102,6 +102,19 @@
   .chart-card .bar { fill: var(--primary); opacity: .85; }
   .chart-card .axis { font-size: 9px; fill: var(--text-faint); }
 
+  .heatmap-months { display: flex; gap: 3px; font-size: .64rem; color: var(--text-faint); margin-bottom: .3rem; padding-left: 0; }
+  .heatmap-month-label { width: 13px; flex-shrink: 0; overflow: visible; white-space: nowrap; }
+  .heatmap { display: flex; gap: 3px; overflow-x: auto; padding-bottom: .2rem; }
+  .heatmap-week { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
+  .heatmap-cell { width: 13px; height: 13px; border-radius: 3px; background: var(--bg); border: 1px solid var(--border); box-sizing: border-box; }
+  .heatmap-cell-empty { background: transparent; border-color: transparent; }
+  .heatmap-cell.level-1 { background: color-mix(in srgb, var(--primary) 25%, var(--bg)); border-color: transparent; }
+  .heatmap-cell.level-2 { background: color-mix(in srgb, var(--primary) 50%, var(--bg)); border-color: transparent; }
+  .heatmap-cell.level-3 { background: color-mix(in srgb, var(--primary) 75%, var(--bg)); border-color: transparent; }
+  .heatmap-cell.level-4 { background: var(--primary); border-color: transparent; }
+  .heatmap-legend { display: flex; align-items: center; gap: .3rem; margin-top: .5rem; font-size: .68rem; color: var(--text-faint); }
+  .heatmap-legend .heatmap-cell { width: 11px; height: 11px; }
+
   .rank-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: .5rem; align-items: center; padding: .3rem 0; font-size: .8rem; }
   .rank-row .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .rank-row .bar-track { grid-column: 1 / -1; height: 4px; background: var(--bg); border-radius: 3px; overflow: hidden; margin-bottom: .45rem; }
@@ -296,6 +309,20 @@
 
 <main>
   <section class="view active" id="view-usage">
+    <div class="card">
+      <div class="head">Usage</div>
+      <div class="heatmap-months" id="heatmap-months"></div>
+      <div class="heatmap" id="usage-heatmap"></div>
+      <div class="heatmap-legend">
+        <span>Less</span>
+        <div class="heatmap-cell"></div>
+        <div class="heatmap-cell level-1"></div>
+        <div class="heatmap-cell level-2"></div>
+        <div class="heatmap-cell level-3"></div>
+        <div class="heatmap-cell level-4"></div>
+        <span>More</span>
+      </div>
+    </div>
     <div class="stat-grid">
       <div class="stat"><div class="label">Cost</div><div class="value accent tabular" id="stat-cost">$0.00</div></div>
       <div class="stat"><div class="label">Tokens</div><div class="value tabular" id="stat-tokens">0</div></div>
@@ -539,6 +566,85 @@
     return key.slice(5); // MM-DD
   }
 
+  // Usage heatmap: GitHub-style calendar layout, but cells are colored by
+  // usage volume (tokens), not "contributions" — deliberately independent of
+  // the period/anchor filter (always full history, like a profile page),
+  // re-bucketed only on the tz toggle. Rendered above the period toolbar's
+  // filtered content since it's the one static section on this tab. Adapted
+  // from maestro's renderHeatmap().
+  function totalSessionTokens(s) { return s.input + s.output + s.cacheRead + s.cacheCreate; }
+
+  function levelFor(tokens, maxTokens) {
+    if (!tokens) return 0;
+    if (!maxTokens) return 1;
+    var ratio = tokens / maxTokens;
+    if (ratio > 0.75) return 4;
+    if (ratio > 0.5) return 3;
+    if (ratio > 0.25) return 2;
+    return 1;
+  }
+
+  function renderHeatmap(tz) {
+    var container = document.getElementById('usage-heatmap');
+    var monthsRow = document.getElementById('heatmap-months');
+    if (!SESSIONS.length) {
+      container.innerHTML = ''; container.style.display = 'none'; monthsRow.innerHTML = '';
+      var msg = document.getElementById('heatmap-empty-msg');
+      if (!msg) {
+        msg = document.createElement('div');
+        msg.id = 'heatmap-empty-msg'; msg.className = 'empty';
+        container.parentNode.insertBefore(msg, container.nextSibling);
+      }
+      msg.textContent = 'No activity yet.'; msg.style.display = 'block';
+      return;
+    }
+    container.style.display = 'flex';
+    var existingMsg = document.getElementById('heatmap-empty-msg');
+    if (existingMsg) existingMsg.style.display = 'none';
+
+    var byDay = {};
+    SESSIONS.forEach(function (s) {
+      var key = bucketKey(s.ts, 'day', tz);
+      var entry = byDay[key] || { tokens: 0, cost: 0 };
+      entry.tokens += totalSessionTokens(s);
+      entry.cost += sessionCost(s);
+      byDay[key] = entry;
+    });
+    var days = Object.keys(byDay).sort();
+    var firstYear = Number(days[0].slice(0, 4));
+    var start = make(firstYear, 0, 1, tz);
+    var end = startOfDay(new Date(days[days.length - 1]), tz);
+    var startSunday = addDays(start, -dow(start, tz), tz);
+    var maxTokens = Math.max.apply(null, Object.keys(byDay).map(function (k) { return byDay[k].tokens; }).concat([0]));
+
+    var weeksHtml = '', monthsHtml = '', lastMonth = -1;
+    var cursor = startSunday;
+    while (cursor <= end) {
+      var monthNow = tz === 'utc' ? cursor.getUTCMonth() : cursor.getMonth();
+      var showLabel = cursor >= start && monthNow !== lastMonth;
+      monthsHtml += '<div class="heatmap-month-label">' + (showLabel ? cursor.toLocaleString('en-US', { month: 'short', timeZone: tz === 'utc' ? 'UTC' : undefined }) : '') + '</div>';
+      if (cursor >= start) lastMonth = monthNow;
+      weeksHtml += '<div class="heatmap-week">';
+      for (var d = 0; d < 7; d++) {
+        var inRange = cursor >= start && cursor <= end;
+        if (!inRange) {
+          weeksHtml += '<div class="heatmap-cell heatmap-cell-empty"></div>';
+        } else {
+          var key = bucketKey(cursor.toISOString(), 'day', tz);
+          var entry = byDay[key] || { tokens: 0, cost: 0 };
+          var lvl = levelFor(entry.tokens, maxTokens);
+          var cls = 'heatmap-cell' + (lvl ? ' level-' + lvl : '');
+          var title = key + ': ' + fmt(entry.tokens) + ' tokens, ' + usd(entry.cost);
+          weeksHtml += '<div class="' + cls + '" title="' + title + '"></div>';
+        }
+        cursor = addDays(cursor, 1, tz);
+      }
+      weeksHtml += '</div>';
+    }
+    container.innerHTML = weeksHtml;
+    monthsRow.innerHTML = monthsHtml;
+  }
+
   function rankRowsHtml(rows, valueFmt) {
     if (!rows.length) return '<div class="empty">No data yet.</div>';
     var max = Math.max.apply(null, rows.map(function (r) { return r.value; }));
@@ -555,6 +661,8 @@
     var period = usageState.period, tz = usageState.tz;
     var win = periodWindow(period, usageState.anchor, tz);
     var sessions = sessionsInWindow(SESSIONS, win);
+
+    renderHeatmap(tz); // static (full history) — unaffected by period/anchor, only re-buckets on tz
 
     document.getElementById('anchor-nav').style.display = period === 'ytd' ? 'none' : 'flex';
     document.getElementById('anchor-label').textContent = anchorLabel(period, win);
