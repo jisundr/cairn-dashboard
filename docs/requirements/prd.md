@@ -1,7 +1,7 @@
 # Product Requirements Document: cairn-dashboard
 
 ## Metadata
-- PRD Version: v0.1
+- PRD Version: v0.2
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/project-definition.md
 - Author:
@@ -26,8 +26,9 @@ cairn-dashboard is a local, single-user web dashboard giving real-time visibilit
 | FR-002 | Tracker tab: Board (Status-column kanban) and Roadmap (Milestone-grouped) views from `docs/.tasks/TRACKER.md` | Must |
 | FR-003 | Swarms tab: `Mode: Unattended` tasks — phase, tmux liveness, `HANDOFF NEEDED` pane tail, stalled indicator (authoritative + soft hint) | Must |
 | FR-004 | Frontend polls backend JSON APIs on a 4s interval for near-real-time updates | Must |
-| FR-005 | Frontend ships as a static, pre-built bundle served by the existing Python backend — no new runtime dependency for end users | Must |
+| FR-005 | ~~Frontend ships as a static, pre-built bundle...~~ — merged into NFR-001 (non-functional constraint, not a separate user-facing behavior) | Merged |
 | FR-006 | Existing `--task-report`/`--window-report` CLI report entry points (used by `task-orchestrator`) keep working unchanged | Must |
+| FR-007 | Usage tab supports date-range filtering (Today / 7 days / 30 days / Month / All), recomputed client-side against the already-fetched session list, no refetch | Must |
 
 ## Non-Functional Requirements
 | ID | Category | Requirement |
