@@ -1,7 +1,7 @@
 # UX Specification: cairn-dashboard
 
 ## Metadata
-- UX Specification Version: v0.1
+- UX Specification Version: v0.2
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md, docs/requirements/user-flows.md
 - Author:
@@ -63,16 +63,19 @@ flowchart TD
 flowchart TD
     SwarmsLoad["Swarms tab active"] --> FetchS["GET /api/swarms"]
     FetchS --> HasSwarms{"Any Mode:Unattended\ntasks?"}
-    HasSwarms -->|No| EmptySwarms["Show empty state"]
-    HasSwarms -->|Yes| List["List each swarm:\nphase, branch, worktree, tmux liveness"]
-    List --> CheckPhase{"Phase ==\nHANDOFF NEEDED?"}
-    CheckPhase -->|Yes| PaneTail["Show expandable pane-tail excerpt"]
+    HasSwarms -->|No| EmptySwarms["Show empty state\n(list + detail panel)"]
+    HasSwarms -->|Yes| List["Left list: each swarm's\nphase, tmux liveness, elapsed time"]
+    List --> Selected{"Swarm\nselected?"}
+    Selected -->|No| DetailEmpty["Right panel: 'Select a\nswarm to see details'"]
+    Selected -->|Yes| Detail["Right panel: phase timeline,\nbranch, worktree, elapsed time,\nrecent-history log"]
+    Detail --> CheckPhase{"Phase ==\nHANDOFF NEEDED?"}
+    CheckPhase -->|Yes| PaneTail["Show pane-tail excerpt\ninline in detail panel"]
     CheckPhase -->|No| CheckStalled{"STATE.md Status\ncarries STALLED marker?"}
     CheckStalled -->|Yes| StalledBadge["Show authoritative\nstalled badge"]
     CheckStalled -->|No| SoftHint["Show soft 'no progress\nin Xm' hint if idle"]
 ```
 
-**Figure 3: Swarms screen decision flow**
+**Figure 3: Swarms screen decision flow (list + detail)**
 
 ---
 
@@ -85,7 +88,7 @@ flowchart TD
 | Tracker screen | Click "Board" sub-tab | Tracker screen, Board view | Always available |
 | Tracker screen | Click "Roadmap" sub-tab | Tracker screen, Roadmap view | Always available |
 | Usage screen | Click a date-range button | Usage screen, recomputed | Always available |
-| Swarms screen | Click a `HANDOFF NEEDED` swarm's pane-tail toggle | Swarms screen, excerpt expanded | Only on swarms whose phase is `HANDOFF NEEDED` |
+| Swarms screen | Click a swarm in the left list | Swarms screen, detail panel opens/swaps on the right | Always available |
 
 Direct navigation via URL hash (`#usage`, `#tracker`, `#tracker/road`, `#swarms`) lands on the same screen/sub-view without going through the tab bar — supports refresh and shared links.
 
@@ -140,28 +143,31 @@ Direct navigation via URL hash (`#usage`, `#tracker`, `#tracker/road`, `#swarms`
 ---
 
 ### Swarms
-**Purpose:** Let the author monitor running Unattended coding-chain swarms without manually checking `tmux`/`STATE.md` (US-003).
+**Purpose:** Let the author monitor running Unattended coding-chain swarms — full status without manually checking `tmux`/`STATE.md`, and without leaving the screen (US-003).
 **Accessible Roles:** Cairn author (sole persona) — always accessible, no gating.
+**Layout note:** List + detail split (left: swarm list, right: detail panel) — see UI Layout Specification for structure.
 
 **Primary Actions:**
 | Action | Available To | System Response |
 |--------|-------------|-----------------|
-| Expand a `HANDOFF NEEDED` swarm's pane-tail excerpt | Cairn author | Shows the bounded ~20-line tmux pane tail for that swarm only |
-| (passive) Wait for the 4s poll | Cairn author | Swarm list updates in place — phase, liveness, badges recompute from fresh `STATE.md`/`HISTORY.md` reads |
+| Click a swarm in the left list | Cairn author | Selects it; right panel opens (or swaps) to show its phase timeline, branch, worktree, elapsed time, and recent-history log |
+| (passive) Wait for the 4s poll | Cairn author | List and (if selected) detail panel update in place — phase, liveness, badges, history recompute from fresh `STATE.md`/`HISTORY.md` reads |
 
 **Permission Rules:**
 | Element / Action | Role | Visibility |
 |-----------------|------|------------|
 | Entire screen | Cairn author | Always visible |
-| Pane-tail excerpt | Cairn author | Only for swarms whose `phase == HANDOFF NEEDED` |
+| Detail panel content | Cairn author | Only rendered once a swarm is selected; empty-state prompt otherwise |
+| Pane-tail excerpt (in detail panel) | Cairn author | Only for the selected swarm when its `phase == HANDOFF NEEDED` |
 | Authoritative stalled badge | Cairn author | Only for swarms whose `STATE.md` `Status` already carries the `STALLED (...)` marker |
 | Soft "no progress" hint | Cairn author | Only for swarms that are idle but not `STALLED`, `HANDOFF NEEDED`, or `PUBLISH` |
 
 **States:**
 - **Loading:** "Loading…" text shown only on the very first fetch.
-- **Empty:** No `Mode: Unattended` tasks exist — "No unattended swarms running." message.
+- **Empty (no swarms):** No `Mode: Unattended` tasks exist — "No unattended swarms running." message spans the list; detail panel shows nothing to select.
+- **Empty (no selection):** Swarms exist but none is selected — right panel shows "Select a swarm to see details."
 - **Error:** A poll fails after data has already rendered once — stale-data indicator, same as Usage/Tracker.
-- **Success:** The rendered swarm list itself is the success state.
+- **Success:** The rendered list (and, once selected, detail panel) is the success state.
 
 ---
 

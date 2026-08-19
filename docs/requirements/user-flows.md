@@ -1,7 +1,7 @@
 # User Flows: cairn-dashboard
 
 ## Metadata
-- User Flows Version: v0.2
+- User Flows Version: v0.3
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md
 - Author:
@@ -87,12 +87,14 @@
 
 **Happy Path**
 1. Author clicks the Swarms tab.
-2. List of `Mode: Unattended` tasks renders with phase, branch, worktree, and tmux liveness per swarm.
-3. A swarm with no recent `HISTORY.md` progress (and not `HANDOFF NEEDED`/`STALLED`/`PUBLISH`) shows the soft "no progress in Xm" hint; a swarm whose `STATE.md` `Status` already carries the `STALLED (...)` marker shows the authoritative stalled badge instead.
-4. **End state:** Author knows each swarm's current phase, liveness, and whether it needs attention.
+2. Left list of `Mode: Unattended` tasks renders with phase, tmux liveness, and elapsed time per swarm; right panel shows an empty state ("Select a swarm to see details").
+3. Author clicks a swarm in the list.
+4. Right panel opens showing that swarm's phase-progress timeline, branch, worktree, elapsed time, and recent-history log. A swarm with no recent `HISTORY.md` progress (and not `HANDOFF NEEDED`/`STALLED`/`PUBLISH`) shows the soft "no progress in Xm" hint; a swarm whose `STATE.md` `Status` already carries the `STALLED (...)` marker shows the authoritative stalled badge instead.
+5. **End state:** Author knows the selected swarm's full status — current phase, history, liveness, and whether it needs attention — without leaving the Swarms screen.
 
 **Alternate Paths**
-- A swarm is at `HANDOFF NEEDED`: author expands its pane-tail excerpt for extra context on what it's paused on.
+- Author clicks a different swarm in the list: detail panel swaps to the newly selected swarm, list selection updates.
+- The selected swarm is at `HANDOFF NEEDED`: its pane-tail excerpt renders inline in the detail panel for extra context on what it's paused on.
 
 **Error States**
 - No `docs/.tasks/` folder, or no Unattended tasks: empty state shown ("No unattended swarms running"), not an error.

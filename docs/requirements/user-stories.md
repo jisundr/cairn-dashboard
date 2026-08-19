@@ -1,7 +1,7 @@
 # User Stories: cairn-dashboard
 
 ## Metadata
-- User Stories Version: v0.2
+- User Stories Version: v0.3
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md
 - Author:
@@ -56,21 +56,26 @@ As a cairn author, I want to see my task tracker's Board and Roadmap views, so t
 **Traces to:** FR-003
 
 **User Story**
-As a cairn author, I want to see my running Unattended coding-chain swarms, so that I know their status without manually checking `tmux` or `STATE.md`.
+As a cairn author, I want to see my running Unattended coding-chain swarms in a list + detail view, so that I know their full status without manually checking `tmux` or `STATE.md`, and without leaving the screen to see the detail.
 
 **Acceptance Criteria**
 - [ ] Swarms tab lists only `Mode: Unattended` tasks — Attended tasks never appear here.
-- [ ] Each swarm shows its phase, branch, and worktree path.
-- [ ] Each swarm shows whether its `tmux` session is alive, dead, or unknown (tmux not installed).
-- [ ] A bounded pane-tail excerpt is shown only when a swarm's phase is `HANDOFF NEEDED`.
-- [ ] A "stalled" badge is shown only when `STATE.md`'s own `Status` field already carries the `STALLED (...)` marker — the dashboard never computes or declares this itself.
+- [ ] Left list shows each swarm's slug, phase, tmux liveness, and elapsed/last-activity time.
+- [ ] Clicking a swarm selects it and opens its detail in a right-side panel; the list stays visible and another swarm can be selected without navigating away. No selection shows an empty-state right panel ("Select a swarm to see details").
+- [ ] Detail panel shows a phase-progress timeline (PLAN → DOC-GATE → QA-RED → IMPLEMENT → QA-AUDIT → DOC-POST-IMPL → PUBLISH) with the current phase highlighted, computed from the swarm's current `phase` value's position in that fixed order.
+- [ ] Detail panel shows branch, worktree, and elapsed/last-activity time.
+- [ ] Detail panel shows a scrollable recent-history log (last several `HISTORY.md` phase-transition lines, newest first).
+- [ ] Detail panel shows the bounded pane-tail excerpt only when the selected swarm's phase is `HANDOFF NEEDED`.
+- [ ] A "stalled" badge is shown (list and detail) only when `STATE.md`'s own `Status` field already carries the `STALLED (...)` marker — the dashboard never computes or declares this itself.
 - [ ] A soft "no progress in Xm" hint is shown for a swarm with no recent `HISTORY.md` activity that isn't already `STALLED`, `HANDOFF NEEDED`, or `PUBLISH`.
-- [ ] An empty state is shown when no Unattended swarms are currently tracked.
+- [ ] An empty state is shown when no Unattended swarms are currently tracked (both list and detail panel).
 
 **Edge Cases**
 - No `docs/.tasks/` folder at all: empty state, not an error.
 - `tmux` not installed on the machine running the dashboard: liveness shows "unknown" rather than false/dead.
 - A swarm mid-chain but not yet stalled: shows the soft "no progress in Xm" hint only, never the authoritative stalled badge.
+- A swarm with fewer than the shown history-log window's worth of entries: log renders whatever exists, no padding/placeholder rows.
+- The selected swarm disappears from the list on a poll (e.g. task folder removed): detail panel reverts to the empty state rather than showing stale data.
 
 ---
 

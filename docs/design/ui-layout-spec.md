@@ -1,7 +1,7 @@
 # UI Layout Specification: cairn-dashboard
 
 ## Metadata
-- UI Layout Specification Version: v0.1
+- UI Layout Specification Version: v0.2
 - Last Updated: 2026-08-19
 - Derived From: docs/design/ux-spec.md
 - Author:
@@ -17,6 +17,7 @@
 | REG-1 | Top Nav | Global | Tab bar (Usage / Tracker / Swarms), always visible, present on every screen |
 | REG-2 | Screen Toolbar | Per-screen | Secondary controls specific to the active screen — Usage's date-range buttons, Tracker's Board/Roadmap sub-tabs. Absent on Swarms (no secondary controls). |
 | REG-3 | Main Content Area | Per-screen | The screen's primary content, fills remaining vertical space below REG-1/REG-2 |
+| REG-4 | Detail Pane | Swarms only | Right-hand panel within Swarms' Main Content Area, showing the selected swarm's full detail; empty-state prompt when nothing is selected |
 
 ---
 
@@ -102,15 +103,19 @@ Tracker Screen
 ---
 
 ### Swarms
-**Layout Pattern:** Card list
+**Layout Pattern:** List + Detail (two-pane split, list narrow/left, detail wide/right — same family as an issue tracker's list-and-detail view)
 
 **Layout Structure:**
 ```
 Top Nav (REG-1)
 Main Content Area (REG-3)
-  └ Swarm card × N (one per Mode:Unattended task)
-      └ phase, branch, worktree, tmux liveness, stalled/hint badge
-      └ expandable pane-tail excerpt (HANDOFF NEEDED only)
+  ├ List Pane (~40% width)
+  │   └ Swarm list item × N (one per Mode:Unattended task)
+  │       └ slug, phase, tmux liveness, elapsed time
+  └ Detail Pane (~60% width, REG-4)
+      └ (no selection) empty-state prompt
+      └ (selected) phase-progress timeline, branch, worktree, elapsed time,
+                    recent-history log, pane-tail excerpt (HANDOFF NEEDED only)
 ```
 
 **Component Hierarchy:**
@@ -118,20 +123,27 @@ Main Content Area (REG-3)
 Swarms Screen
  ├── TopNav (shared)
  └── MainContent
-      └── SwarmList
-           └── SwarmCard × N
-                ├── SwarmHeader (slug, phase)
-                ├── SwarmMeta (branch, worktree, tmux liveness)
+      ├── SwarmList (List Pane)
+      │    └── SwarmListItem × N
+      │         ├── SwarmHeader (slug, phase)
+      │         ├── LivenessDot
+      │         └── ElapsedTime
+      └── SwarmDetailPanel (Detail Pane, REG-4)
+           ├── (empty) DetailEmptyState
+           └── (selected)
+                ├── PhaseTimeline (7 fixed steps, current highlighted)
+                ├── SwarmMeta (branch, worktree, elapsed time)
                 ├── StatusBadge (stalled | soft-hint | none)
+                ├── HistoryLog (recent HISTORY.md entries, newest first)
                 └── PaneTailExcerpt (conditional: HANDOFF NEEDED only)
 ```
 
 **Responsive Behavior:**
 | Breakpoint | Transformation |
 |------------|----------------|
-| Mobile | Cards remain single-column full-width (already the desktop layout for this screen — no structural change needed) |
-| Tablet | Same as mobile |
-| Desktop | Same, optionally wider max-width cap on card container |
+| Mobile | List and detail pane stack vertically — list first (full width), detail pane appears below it once a swarm is selected (or replaces the list entirely with a back affordance, implementer's choice within this constraint) |
+| Tablet | Two-pane split narrows (e.g. 45/55) but stays side-by-side down to a minimum list-pane width, then falls back to the mobile stacked behavior |
+| Desktop | Full two-pane split, ~40/60 |
 
 ---
 
@@ -145,7 +157,8 @@ Swarms Screen
 | Tracker | REG-2 | SubViewToolbar | Board/Roadmap toggle |
 | Tracker | REG-3 | BoardView or RoadmapView | Mutually exclusive, one active at a time |
 | Swarms | REG-1 | TopNav | Shared |
-| Swarms | REG-3 | SwarmList | No REG-2 toolbar on this screen |
+| Swarms | REG-3 | SwarmList | No REG-2 toolbar on this screen; list pane within REG-3 |
+| Swarms | REG-4 | SwarmDetailPanel | Right pane; empty-state or selected-swarm detail |
 
 ---
 
