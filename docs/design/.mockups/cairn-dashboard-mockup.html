@@ -243,11 +243,11 @@
 
 <div class="toolbar" id="toolbar-usage">
   <div class="segmented" role="group" aria-label="Date range">
-    <button aria-selected="false">Today</button>
-    <button aria-selected="true">7 days</button>
-    <button aria-selected="false">30 days</button>
-    <button aria-selected="false">Month</button>
-    <button aria-selected="false">All</button>
+    <button aria-selected="false" data-range="today">Today</button>
+    <button aria-selected="true" data-range="7">7 days</button>
+    <button aria-selected="false" data-range="30">30 days</button>
+    <button aria-selected="false" data-range="month">Month</button>
+    <button aria-selected="false" data-range="all">All</button>
   </div>
 </div>
 <div class="toolbar" id="toolbar-tracker" style="display:none">
@@ -271,41 +271,35 @@
 <main>
   <section class="view active" id="view-usage">
     <div class="stat-grid">
-      <div class="stat"><div class="label">Cost</div><div class="value accent tabular">$18.42</div></div>
-      <div class="stat"><div class="label">Tokens</div><div class="value tabular">4,218,900</div></div>
-      <div class="stat"><div class="label">Calls</div><div class="value tabular">612</div></div>
-      <div class="stat"><div class="label">Sessions</div><div class="value tabular">9</div></div>
-      <div class="stat"><div class="label">Cache hit</div><div class="value tabular">87.3%</div></div>
+      <div class="stat"><div class="label">Cost</div><div class="value accent tabular" id="stat-cost">$0.00</div></div>
+      <div class="stat"><div class="label">Tokens</div><div class="value tabular" id="stat-tokens">0</div></div>
+      <div class="stat"><div class="label">Calls</div><div class="value tabular" id="stat-calls">0</div></div>
+      <div class="stat"><div class="label">Sessions</div><div class="value tabular" id="stat-sessions">0</div></div>
+      <div class="stat"><div class="label">Cache hit</div><div class="value tabular" id="stat-cachehit">0%</div></div>
     </div>
     <div class="card chart-card">
       <div class="head">Cost over time</div>
-      <svg viewBox="0 0 700 150" preserveAspectRatio="none">
+      <svg viewBox="0 0 700 150" preserveAspectRatio="none" id="usage-chart">
         <g class="bars"></g>
         <g class="labels"></g>
       </svg>
     </div>
     <div class="card-grid">
       <div class="card">
-        <div class="head">By model (all time)</div>
-        <div class="rank-row"><div class="name">claude-sonnet-5</div><div class="num tabular">$14.90</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div>
-        <div class="rank-row"><div class="name">claude-opus-5</div><div class="num tabular">$2.85</div><div class="bar-track"><div class="bar-fill" style="width:19%"></div></div></div>
-        <div class="rank-row"><div class="name">claude-haiku-4-5</div><div class="num tabular">$0.67</div><div class="bar-track"><div class="bar-fill" style="width:5%"></div></div></div>
+        <div class="head">By model</div>
+        <div id="by-model"></div>
       </div>
       <div class="card">
-        <div class="head">By cairn version (all time)</div>
-        <div class="rank-row"><div class="name">0.18.0</div><div class="num tabular">$12.10</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div>
-        <div class="rank-row"><div class="name">0.17.2</div><div class="num tabular">$6.32</div><div class="bar-track"><div class="bar-fill" style="width:52%"></div></div></div>
+        <div class="head">By cairn version</div>
+        <div id="by-version"></div>
       </div>
       <div class="card">
-        <div class="head">Top subagents (all time)</div>
-        <div class="rank-row"><div class="name">requirements-engineer</div><div class="num tabular">41</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div>
-        <div class="rank-row"><div class="name">qa-engineer</div><div class="num tabular">28</div><div class="bar-track"><div class="bar-fill" style="width:68%"></div></div></div>
-        <div class="rank-row"><div class="name">software-engineer</div><div class="num tabular">24</div><div class="bar-track"><div class="bar-fill" style="width:59%"></div></div></div>
+        <div class="head">Top subagents</div>
+        <div id="by-subagent"></div>
       </div>
       <div class="card">
-        <div class="head">Top skills (all time)</div>
-        <div class="rank-row"><div class="name">writer-shared</div><div class="num tabular">33</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div>
-        <div class="rank-row"><div class="name">mermaid-diagrams</div><div class="num tabular">14</div><div class="bar-track"><div class="bar-fill" style="width:42%"></div></div></div>
+        <div class="head">Top skills</div>
+        <div id="by-skill"></div>
       </div>
     </div>
     <div class="card">
@@ -313,12 +307,7 @@
       <div class="table-wrap">
         <table>
           <thead><tr><th>Session</th><th>Started</th><th class="num">Calls</th><th class="num">Cost</th><th>Version</th></tr></thead>
-          <tbody>
-            <tr><td class="mono">3fae21b0</td><td>Aug 19, 7:12 AM</td><td class="num tabular">88</td><td class="num tabular">$2.94</td><td>0.18.0</td></tr>
-            <tr><td class="mono">9c02e77a</td><td>Aug 19, 6:03 AM</td><td class="num tabular">54</td><td class="num tabular">$1.61</td><td>0.18.0</td></tr>
-            <tr><td class="mono">1b88d4f1</td><td>Aug 18, 4:47 PM</td><td class="num tabular">142</td><td class="num tabular">$4.20</td><td>0.18.0</td></tr>
-            <tr><td class="mono">77af90cd</td><td>Aug 18, 11:20 AM</td><td class="num tabular">63</td><td class="num tabular">$1.85</td><td>0.17.2</td></tr>
-          </tbody>
+          <tbody id="sessions-body"></tbody>
         </table>
       </div>
     </div>
@@ -373,30 +362,150 @@
 </main>
 
 <script>
-  var chartData = [1.2, 1.8, 0.9, 2.6, 3.1, 4.4, 4.42];
-  var days = ['Aug 13','Aug 14','Aug 15','Aug 16','Aug 17','Aug 18','Aug 19'];
-  var svg = document.querySelector('.chart-card svg');
-  var barsG = svg.querySelector('.bars');
-  var labelsG = svg.querySelector('.labels');
-  var max = Math.max.apply(null, chartData);
-  var w = 700, h = 130, gap = 10;
-  var barW = (w / chartData.length) - gap;
-  chartData.forEach(function (v, i) {
-    var barH = (v / max) * h;
-    var x = i * (barW + gap);
-    var rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    rect.setAttribute('class','bar');
-    rect.setAttribute('x', x); rect.setAttribute('y', h - barH);
-    rect.setAttribute('width', barW); rect.setAttribute('height', barH);
-    rect.setAttribute('rx', 3);
-    barsG.appendChild(rect);
-    var text = document.createElementNS('http://www.w3.org/2000/svg','text');
-    text.setAttribute('class','axis');
-    text.setAttribute('x', x + barW/2); text.setAttribute('y', h + 16);
-    text.setAttribute('text-anchor','middle');
-    text.textContent = days[i];
-    labelsG.appendChild(text);
-  });
+  // Usage tab: mock session data + a single shared range filter every section
+  // reads from (stat grid, chart, rankings, sessions table) — modeled after
+  // maestro's token-usage-report periodWindow() pattern, which exists
+  // specifically because per-section-independent filtering silently drifted
+  // out of sync with the picker in an earlier version of that report.
+  function fmt(n) { return Math.round(n).toLocaleString(); }
+  function usd(n) { return '$' + n.toFixed(2); }
+
+  var SESSIONS = [
+    { id: '3fae21b0', ts: '2026-08-19T07:12:00Z', calls: 88, version: '0.18.0',
+      input: 210000, output: 62000, cacheRead: 1900000, cacheCreate: 40000,
+      models: [{ model: 'claude-sonnet-5', cost: 2.60 }, { model: 'claude-haiku-4-5', cost: 0.34 }],
+      subagents: { 'requirements-engineer': 5, 'qa-engineer': 3 }, skills: { 'writer-shared': 4 } },
+    { id: '9c02e77a', ts: '2026-08-19T06:03:00Z', calls: 54, version: '0.18.0',
+      input: 140000, output: 38000, cacheRead: 1100000, cacheCreate: 22000,
+      models: [{ model: 'claude-sonnet-5', cost: 1.61 }],
+      subagents: { 'qa-engineer': 4 }, skills: { 'writer-shared': 2 } },
+    { id: '1b88d4f1', ts: '2026-08-18T16:47:00Z', calls: 142, version: '0.18.0',
+      input: 380000, output: 95000, cacheRead: 3100000, cacheCreate: 70000,
+      models: [{ model: 'claude-sonnet-5', cost: 3.80 }, { model: 'claude-opus-5', cost: 0.40 }],
+      subagents: { 'software-engineer': 8, 'qa-auditor': 3 }, skills: { 'mermaid-diagrams': 5 } },
+    { id: '77af90cd', ts: '2026-08-18T11:20:00Z', calls: 63, version: '0.17.2',
+      input: 165000, output: 44000, cacheRead: 1300000, cacheCreate: 26000,
+      models: [{ model: 'claude-sonnet-5', cost: 1.85 }],
+      subagents: { 'requirements-engineer': 2 }, skills: {} },
+    { id: 'e41a90bb', ts: '2026-08-14T09:00:00Z', calls: 97, version: '0.18.0',
+      input: 260000, output: 71000, cacheRead: 2000000, cacheCreate: 48000,
+      models: [{ model: 'claude-sonnet-5', cost: 2.10 }, { model: 'claude-opus-5', cost: 1.20 }],
+      subagents: { 'solution-architect': 6 }, skills: { 'mermaid-diagrams': 3 } },
+    { id: 'a205f61e', ts: '2026-08-08T14:30:00Z', calls: 45, version: '0.17.2',
+      input: 118000, output: 30000, cacheRead: 900000, cacheCreate: 18000,
+      models: [{ model: 'claude-sonnet-5', cost: 1.40 }],
+      subagents: { 'software-engineer': 5 }, skills: { 'writer-shared': 3 } },
+    { id: '6d3c2b91', ts: '2026-08-02T10:15:00Z', calls: 30, version: '0.17.2',
+      input: 78000, output: 19000, cacheRead: 560000, cacheCreate: 11000,
+      models: [{ model: 'claude-sonnet-5', cost: 0.95 }, { model: 'claude-haiku-4-5', cost: 0.15 }],
+      subagents: { 'qa-engineer': 3 }, skills: {} },
+    { id: '5f0e8a17', ts: '2026-07-25T08:00:00Z', calls: 51, version: '0.16.0',
+      input: 140000, output: 52000, cacheRead: 800000, cacheCreate: 15000,
+      models: [{ model: 'claude-opus-5', cost: 2.85 }],
+      subagents: { 'documentation-auditor': 4 }, skills: {} },
+    { id: 'c3d9f402', ts: '2026-07-05T12:00:00Z', calls: 40, version: '0.16.0',
+      input: 105000, output: 27000, cacheRead: 620000, cacheCreate: 12000,
+      models: [{ model: 'claude-sonnet-5', cost: 1.10 }],
+      subagents: { 'codebase-auditor': 2 }, skills: {} },
+    { id: '82b1e0c5', ts: '2026-06-20T09:30:00Z', calls: 18, version: '0.15.0',
+      input: 48000, output: 12000, cacheRead: 260000, cacheCreate: 5000,
+      models: [{ model: 'claude-sonnet-5', cost: 0.60 }],
+      subagents: {}, skills: {} }
+  ];
+
+  function sessionCost(s) { return s.models.reduce(function (sum, m) { return sum + m.cost; }, 0); }
+
+  function sessionsInRange(range) {
+    if (range === 'all') return SESSIONS;
+    var now = new Date('2026-08-19T08:00:00Z'); // fixed "now" so this mockup renders deterministically
+    var cutoff;
+    if (range === 'today') cutoff = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    else if (range === 'month') cutoff = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    else cutoff = new Date(now.getTime() - Number(range) * 86400000);
+    return SESSIONS.filter(function (s) { return new Date(s.ts) >= cutoff; });
+  }
+
+  function rankRowsHtml(rows, valueFmt) {
+    if (!rows.length) return '<div class="empty">No data yet.</div>';
+    var max = Math.max.apply(null, rows.map(function (r) { return r.value; }));
+    return rows.slice(0, 4).map(function (r) {
+      return '<div class="rank-row"><div class="name">' + r.name + '</div>' +
+        '<div class="num tabular">' + valueFmt(r.value) + '</div>' +
+        '<div class="bar-track"><div class="bar-fill" style="width:' + (r.value / max * 100).toFixed(1) + '%"></div></div></div>';
+    }).join('');
+  }
+
+  function renderUsage(range) {
+    var sessions = sessionsInRange(range);
+
+    var totalCost = 0, totalIn = 0, totalOut = 0, totalCacheR = 0, totalCacheC = 0, totalCalls = 0;
+    var byModel = {}, byVersion = {}, bySubagent = {}, bySkill = {}, byDay = {};
+    sessions.forEach(function (s) {
+      var cost = sessionCost(s);
+      totalCost += cost; totalIn += s.input; totalOut += s.output;
+      totalCacheR += s.cacheRead; totalCacheC += s.cacheCreate; totalCalls += s.calls;
+      s.models.forEach(function (m) { byModel[m.model] = (byModel[m.model] || 0) + m.cost; });
+      byVersion[s.version] = (byVersion[s.version] || 0) + cost;
+      Object.keys(s.subagents).forEach(function (k) { bySubagent[k] = (bySubagent[k] || 0) + s.subagents[k]; });
+      Object.keys(s.skills).forEach(function (k) { bySkill[k] = (bySkill[k] || 0) + s.skills[k]; });
+      var day = s.ts.slice(0, 10);
+      byDay[day] = (byDay[day] || 0) + cost;
+    });
+    var totalTokens = totalIn + totalOut + totalCacheR + totalCacheC;
+    var cacheHit = (totalCacheR + totalIn) > 0 ? (totalCacheR / (totalCacheR + totalIn) * 100) : 0;
+
+    document.getElementById('stat-cost').textContent = usd(totalCost);
+    document.getElementById('stat-tokens').textContent = fmt(totalTokens);
+    document.getElementById('stat-calls').textContent = fmt(totalCalls);
+    document.getElementById('stat-sessions').textContent = fmt(sessions.length);
+    document.getElementById('stat-cachehit').textContent = cacheHit.toFixed(1) + '%';
+
+    function toRows(obj) { return Object.keys(obj).map(function (k) { return { name: k, value: obj[k] }; }).sort(function (a, b) { return b.value - a.value; }); }
+    document.getElementById('by-model').innerHTML = rankRowsHtml(toRows(byModel), usd);
+    document.getElementById('by-version').innerHTML = rankRowsHtml(toRows(byVersion), usd);
+    document.getElementById('by-subagent').innerHTML = rankRowsHtml(toRows(bySubagent), fmt);
+    document.getElementById('by-skill').innerHTML = rankRowsHtml(toRows(bySkill), fmt);
+
+    var svg = document.getElementById('usage-chart');
+    var barsG = svg.querySelector('.bars'), labelsG = svg.querySelector('.labels');
+    barsG.innerHTML = ''; labelsG.innerHTML = '';
+    var days = Object.keys(byDay).sort();
+    if (days.length) {
+      var max = Math.max.apply(null, days.map(function (d) { return byDay[d]; }));
+      var w = 700, h = 130, gap = Math.max(4, 10 - days.length);
+      var barW = Math.max(3, (w / days.length) - gap);
+      days.forEach(function (d, i) {
+        var barH = (byDay[d] / max) * h;
+        var x = i * (barW + gap);
+        var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('class', 'bar');
+        rect.setAttribute('x', x); rect.setAttribute('y', h - barH);
+        rect.setAttribute('width', barW); rect.setAttribute('height', Math.max(1, barH));
+        rect.setAttribute('rx', 3);
+        var title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        title.textContent = d + ': ' + usd(byDay[d]);
+        rect.appendChild(title);
+        barsG.appendChild(rect);
+        var labelEvery = Math.max(1, Math.ceil(days.length / 8));
+        if (i % labelEvery === 0) {
+          var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('class', 'axis');
+          text.setAttribute('x', x + barW / 2); text.setAttribute('y', h + 16);
+          text.setAttribute('text-anchor', 'middle');
+          text.textContent = d.slice(5);
+          labelsG.appendChild(text);
+        }
+      });
+    }
+
+    var sorted = sessions.slice().sort(function (a, b) { return b.ts.localeCompare(a.ts); });
+    document.getElementById('sessions-body').innerHTML = sorted.length ? sorted.map(function (s) {
+      var started = new Date(s.ts).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+      return '<tr><td class="mono">' + s.id + '</td><td>' + started + '</td>' +
+        '<td class="num tabular">' + fmt(s.calls) + '</td><td class="num tabular">' + usd(sessionCost(s)) + '</td>' +
+        '<td>' + s.version + '</td></tr>';
+    }).join('') : '<tr><td colspan="5" class="empty">No sessions in this range.</td></tr>';
+  }
 
   function setTab(view, sub, pushHash) {
     document.querySelectorAll('.tab').forEach(function (t) { t.setAttribute('aria-selected', t.dataset.view === view ? 'true' : 'false'); });
@@ -433,8 +542,11 @@
     btn.addEventListener('click', function () {
       document.querySelectorAll('#toolbar-usage .segmented button').forEach(function (b) { b.setAttribute('aria-selected','false'); });
       btn.setAttribute('aria-selected','true');
+      renderUsage(btn.dataset.range);
     });
   });
+
+  renderUsage('7');
 
   document.querySelectorAll('#toolbar-tracker .segmented button').forEach(function (btn) {
     btn.addEventListener('click', function () { setTab('tracker', btn.dataset.sub, true); });
