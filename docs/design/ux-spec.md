@@ -1,7 +1,7 @@
 # UX Specification: cairn-dashboard
 
 ## Metadata
-- UX Specification Version: v0.5
+- UX Specification Version: v0.6
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md, docs/requirements/user-flows.md
 - Author:
@@ -49,8 +49,8 @@ flowchart TD
     Fetch --> HasSessions{"Sessions in\nselected range?"}
     HasSessions -->|Yes| Render["Render stat grid, chart,\nrankings, sessions table"]
     HasSessions -->|No| EmptyRange["Show zeroed stats,\nempty chart/rankings/table"]
-    Render --> RangeSwitch["Author switches date range"]
-    RangeSwitch --> Recompute["Recompute client-side,\nno refetch"]
+    Render --> RangeSwitch["Author switches period,\nnavigates anchor, or toggles tz"]
+    RangeSwitch --> Recompute["Recompute client-side,\ncalendar-aligned, no refetch"]
     Recompute --> Render
     Render --> Poll4s["4s poll tick"]
     Poll4s -->|Success| Render
@@ -105,17 +105,22 @@ Direct navigation via URL hash (`#usage`, `#tracker`, `#tracker/road`, `#swarms`
 **Primary Actions:**
 | Action | Available To | System Response |
 |--------|-------------|-----------------|
-| Select a date range (Today / 7d / 30d / Month / All) | Cairn author | Stats, chart, and rankings recompute client-side against the already-fetched session list — no refetch (FR-007) |
+| Select a period type (Daily / Weekly / Monthly / Yearly / YTD) | Cairn author | Stats, chart, and rankings recompute client-side against the already-fetched session list, calendar-aligned to the current anchor — no refetch (FR-007) |
+| Click prev/next | Cairn author | Anchor shifts by one period unit (day/week/month/year); view recomputes. Disabled past the earliest recorded session (prev) or past today (next). Not shown for YTD (no anchor). |
+| Click "Latest" | Cairn author | Anchor jumps back to today |
+| Toggle UTC/Local | Cairn author | Bucket boundaries (hour/day/month) and every displayed timestamp shift accordingly, independent of the period/anchor selection |
+| Hover/focus the filter info icon | Cairn author | Tooltip explains the period types, anchor navigation, and the UTC/Local toggle |
 | (passive) Wait for the 4s poll | Cairn author | View updates in place with new usage data, no visible reload |
 
 **Permission Rules:**
 | Element / Action | Role | Visibility |
 |-----------------|------|------------|
 | Entire screen | Cairn author | Always visible |
+| Prev/next navigation | Cairn author | Hidden for YTD; disabled at the earliest-session/today boundary otherwise |
 
 **States:**
 - **Loading:** "Loading…" text shown only on the very first fetch, before any data has ever rendered.
-- **Empty:** No sessions in the selected range — stat grid shows zeroed values, chart/rankings/sessions table each show their own empty-state message, never an error.
+- **Empty:** No sessions in the selected window — stat grid shows zeroed values, chart/rankings/sessions table each show their own empty-state message, never an error.
 - **Error:** A poll fails after data has already rendered once — a stale-data indicator appears on the existing (last-good) view; the screen never clears to blank or crashes.
 - **Success:** The rendered stat grid/chart/rankings/table *is* the success state — no separate confirmation affordance needed.
 

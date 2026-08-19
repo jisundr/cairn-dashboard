@@ -1,7 +1,7 @@
 # User Flows: cairn-dashboard
 
 ## Metadata
-- User Flows Version: v0.3
+- User Flows Version: v0.4
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md
 - Author:
@@ -49,10 +49,15 @@
 4. **End state:** Author sees up-to-date cost/token/session figures without leaving the browser tab.
 
 **Alternate Paths**
-- Author switches the date range (Today / 7 days / 30 days / Month / All): stats, chart, and rankings recompute client-side against the already-fetched session list.
+- Author switches the period type (Daily / Weekly / Monthly / Yearly / YTD): stats, chart, and rankings recompute client-side against the already-fetched session list, calendar-aligned to the current anchor.
+- Author clicks prev/next: anchor shifts by one period unit (a day, week, month, or year) and the view recomputes for that window.
+- Author clicks "Latest": anchor jumps back to today.
+- Author toggles UTC/Local: bucket boundaries and all displayed timestamps shift accordingly, independent of the period/anchor.
+- Period is Daily: chart shows 24 hourly buckets for the anchored day instead of a single bar.
 
 **Error States**
 - `/api/usage` fetch fails (server not running, network blip): UI shows a stale-data indicator on the existing view rather than freezing silently or clearing to blank.
+- Author navigates prev past the earliest recorded session, or next past today: the button disables rather than paging into an empty/future window.
 
 ---
 

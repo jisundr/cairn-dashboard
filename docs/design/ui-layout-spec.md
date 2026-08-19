@@ -1,7 +1,7 @@
 # UI Layout Specification: cairn-dashboard
 
 ## Metadata
-- UI Layout Specification Version: v0.3
+- UI Layout Specification Version: v0.4
 - Last Updated: 2026-08-19
 - Derived From: docs/design/ux-spec.md
 - Author:
@@ -29,10 +29,11 @@
 **Layout Structure:**
 ```
 Top Nav (REG-1)
-Screen Toolbar (REG-2): date-range buttons
+Screen Toolbar (REG-2): period buttons + anchor nav (prev/next/Latest) + UTC/Local toggle + info icon
 Main Content Area (REG-3)
   └ Stat Grid (cost, tokens, calls, sessions, cache-hit)
-  └ Cost-over-time chart
+  └ Cost-over-time chart (24 hourly buckets for Daily; daily buckets for
+                           Weekly/Monthly/YTD; monthly buckets for Yearly)
   └ Ranking lists (by-model, by-version, by-subagent, by-skill)
   └ Sessions table
 ```
@@ -41,8 +42,11 @@ Main Content Area (REG-3)
 ```
 Usage Screen
  ├── TopNav (shared)
- ├── DateRangeToolbar
- │    └── RangeButton × 5 (Today, 7d, 30d, Month, All)
+ ├── PeriodToolbar
+ │    ├── PeriodButton × 5 (Daily, Weekly, Monthly, Yearly, YTD)
+ │    ├── AnchorNav (prev, anchor label, next, Latest — hidden for YTD)
+ │    ├── TimezoneToggle (UTC, Local)
+ │    └── InfoIcon
  └── MainContent
       ├── StatGrid
       │    └── StatTile × 5
@@ -154,7 +158,7 @@ Swarms Screen
 | Screen | Region | Component | Notes |
 |--------|--------|-----------|-------|
 | Usage | REG-1 | TopNav | Shared across all screens |
-| Usage | REG-2 | DateRangeToolbar | 5 range buttons |
+| Usage | REG-2 | PeriodToolbar | 5 period buttons + anchor nav + UTC/Local toggle + info icon |
 | Usage | REG-3 | StatGrid, CostChart, RankingSection ×4, SessionsTable | |
 | Tracker | REG-1 | TopNav | Shared |
 | Tracker | REG-2 | SubViewToolbar | Board/Roadmap toggle |

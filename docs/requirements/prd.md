@@ -1,7 +1,7 @@
 # Product Requirements Document: cairn-dashboard
 
 ## Metadata
-- PRD Version: v0.4
+- PRD Version: v0.5
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/project-definition.md
 - Author:
@@ -28,7 +28,8 @@ cairn-dashboard is a local, single-user web dashboard giving real-time visibilit
 | FR-004 | Frontend polls backend JSON APIs on a 4s interval for near-real-time updates | Must |
 | FR-005 | ~~Frontend ships as a static, pre-built bundle...~~ — merged into NFR-001 (non-functional constraint, not a separate user-facing behavior) | Merged |
 | FR-006 | Existing `--task-report`/`--window-report` CLI report entry points (used by `task-orchestrator`) keep working unchanged | Must |
-| FR-007 | Usage tab supports date-range filtering (Today / 7 days / 30 days / Month / All), recomputed client-side against the already-fetched session list, no refetch | Must |
+| FR-007 | Usage tab supports calendar-period filtering (Daily / Weekly / Monthly / Yearly / YTD) with an anchor date and prev/next/Latest navigation to page through history, plus an independent UTC/Local timezone toggle — recomputed client-side against the already-fetched session list, no refetch | Must |
+| FR-008 | Daily period shows an hour-by-hour (24-bucket) chart for the anchored day, not a single bar | Must |
 
 ## Non-Functional Requirements
 | ID | Category | Requirement |

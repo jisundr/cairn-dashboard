@@ -1,7 +1,7 @@
 # User Stories: cairn-dashboard
 
 ## Metadata
-- User Stories Version: v0.4
+- User Stories Version: v0.5
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md
 - Author:
@@ -13,23 +13,29 @@
 
 ## US-001 — View usage and cost
 
-**Traces to:** FR-001, FR-004, FR-007
+**Traces to:** FR-001, FR-004, FR-007, FR-008
 
 **User Story**
 As a cairn author, I want to see my Claude Code token usage and cost at a glance, so that I can track spend without reading raw transcripts.
 
 **Acceptance Criteria**
-- [ ] Usage tab shows total cost, tokens, calls, sessions, and cache-hit rate for the selected date range.
-- [ ] A cost-over-time chart renders for the selected range.
+- [ ] Usage tab shows total cost, tokens, calls, sessions, and cache-hit rate for the selected period window.
+- [ ] A cost-over-time chart renders for the selected window, zero-filled to every bucket in the window (hour/day/month depending on period), not just buckets with an actual session.
 - [ ] By-model, by-version, by-subagent, and by-skill ranking lists each render, sorted descending by their respective metric.
 - [ ] A sessions table lists individual sessions with their own cost/token/call figures.
-- [ ] Author can switch the date range (Today / 7 days / 30 days / Month / All); stats, chart, and rankings recompute against the already-fetched session list — no refetch.
+- [ ] Author can switch the period type (Daily / Weekly / Monthly / Yearly / YTD); stats, chart, and rankings recompute against the already-fetched session list — no refetch.
+- [ ] Daily/Weekly/Monthly/Yearly periods carry an anchor date with prev/next navigation to page through history, plus a "Latest" control that jumps the anchor back to today. YTD has no anchor (always the current year to date).
+- [ ] Daily period's chart shows 24 hourly buckets for the anchored day, not one single-day bar.
+- [ ] Weekly/Monthly/Yearly periods are calendar-aligned to the anchor (e.g. Monthly = the 1st through the last day of the anchor's month), not a trailing N-day window.
+- [ ] Yearly period's chart uses monthly buckets (12), not daily — a full year of daily points would be too dense to read.
+- [ ] Author can toggle displayed times between UTC and Local; this shifts hour/day/month bucket boundaries and all displayed timestamps, independent of the period/anchor selection.
 - [ ] The view updates within 4 seconds of new usage occurring (poll interval).
 - [ ] A note is shown when one or more calls used a model with no pricing entry, distinct from the cost total.
 
 **Edge Cases**
-- No sessions in the selected range: stat grid shows zeroed values, chart/rankings/sessions table each show an empty state, not an error.
+- No sessions in the selected window: stat grid shows zeroed values, chart/rankings/sessions table each show an empty state, not an error.
 - A model absent from the pricing table: excluded from cost total, surfaced via the unpriced-calls note, not silently $0.
+- Navigating past the earliest recorded session (prev) or past today (next): the button disables rather than paging into an empty/future window.
 
 ---
 
