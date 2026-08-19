@@ -62,6 +62,20 @@
   }
   .segmented button[aria-selected="true"] { background: var(--bg); color: var(--text); }
   .sort-control { display: flex; align-items: center; gap: .4rem; }
+  .anchor-nav { display: flex; align-items: center; gap: .4rem; }
+  .icon-btn {
+    border: 1px solid var(--border); background: var(--surface); border-radius: 6px;
+    width: 1.8rem; height: 1.8rem; display: grid; place-items: center; cursor: pointer;
+    color: var(--text-dim); font-size: .95rem; line-height: 1;
+  }
+  .icon-btn:disabled { opacity: .35; cursor: default; }
+  .icon-btn:not(:disabled):hover { color: var(--text); }
+  .anchor-label { font-size: .8rem; font-weight: 600; color: var(--text); min-width: 9rem; text-align: center; }
+  #anchor-latest {
+    border: 1px solid var(--border); background: var(--surface); border-radius: 6px;
+    padding: .3rem .65rem; font-size: .76rem; font-weight: 500; color: var(--text-dim); cursor: pointer;
+  }
+  #anchor-latest:hover { color: var(--text); }
   .info-icon { color: var(--text-faint); font-size: .95rem; cursor: help; border-radius: 50%; }
   .info-icon:hover, .info-icon:focus-visible { color: var(--text-dim); }
 
@@ -242,13 +256,25 @@
 </header>
 
 <div class="toolbar" id="toolbar-usage">
-  <div class="segmented" role="group" aria-label="Date range">
-    <button aria-selected="false" data-range="today">Today</button>
-    <button aria-selected="true" data-range="7">7 days</button>
-    <button aria-selected="false" data-range="30">30 days</button>
-    <button aria-selected="false" data-range="month">Month</button>
-    <button aria-selected="false" data-range="all">All</button>
+  <div class="segmented" role="group" aria-label="Period" id="period-group">
+    <button aria-selected="false" data-period="daily">Daily</button>
+    <button aria-selected="true" data-period="weekly">Weekly</button>
+    <button aria-selected="false" data-period="monthly">Monthly</button>
+    <button aria-selected="false" data-period="yearly">Yearly</button>
+    <button aria-selected="false" data-period="ytd">YTD</button>
   </div>
+  <div class="anchor-nav" id="anchor-nav" role="group" aria-label="Anchor navigation">
+    <button class="icon-btn" id="anchor-prev" aria-label="Previous">&#8249;</button>
+    <span class="anchor-label tabular" id="anchor-label"></span>
+    <button class="icon-btn" id="anchor-next" aria-label="Next">&#8250;</button>
+    <button id="anchor-latest">Latest</button>
+  </div>
+  <div class="segmented" role="group" aria-label="Timezone" id="tz-group">
+    <button aria-selected="true" data-tz="utc">UTC</button>
+    <button aria-selected="false" data-tz="local">Local</button>
+  </div>
+  <span class="info-icon" tabindex="0" role="button" aria-label="What do these controls mean?"
+    title="Period: Daily/Weekly/Monthly/Yearly are calendar-aligned to the anchor date; YTD is always this year to date, no anchor.&#10;Prev/next: step the anchor by one period unit; disabled past the earliest session or past today.&#10;Latest: jump the anchor back to today.&#10;UTC/Local: shifts hour/day/month bucket boundaries and all timestamps.">&#9432;</span>
 </div>
 <div class="toolbar" id="toolbar-tracker" style="display:none">
   <div class="segmented" role="group" aria-label="Tracker view">
@@ -415,42 +441,102 @@
 
   function sessionCost(s) { return s.models.reduce(function (sum, m) { return sum + m.cost; }, 0); }
 
-  function dayStr(d) { return d.toISOString().slice(0, 10); }
+  // Period+anchor+timezone window model, adapted from maestro's own
+  // token-usage-report periodWindow(period, anchorDay) — one shared window
+  // every section (stats, chart, rankings, table) reads from, so they can
+  // never drift out of sync with each other. No DST-transition handling —
+  // approximate, same documented tradeoff as this mockup's fixed "now".
+  var NOW = new Date('2026-08-19T08:00:00Z'); // fixed so this mockup renders deterministically
 
-  // Zero-fills the chart to every day in the selected window, not just days
-  // with a session — otherwise a quiet day reads as "no x-axis tick here" or
-  // (worse) collapses the chart to look like the filter didn't change,
-  // instead of an honest $0 bar. Same reasoning as maestro's own
-  // day/week/month zero-fill in its Cumulative Spend and Tokens & Cost
-  // charts (see renderPeriodViews in that report).
-  function zeroFillDays(range) {
-    var now = new Date('2026-08-19T08:00:00Z');
-    var end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    var start;
-    if (range === 'today') {
-      start = end;
-    } else if (range === 'month') {
-      start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-    } else if (range === 'all') {
-      var earliest = SESSIONS.reduce(function (min, s) { return s.ts < min ? s.ts : min; }, SESSIONS[0].ts);
-      var e = new Date(earliest);
-      start = new Date(Date.UTC(e.getUTCFullYear(), e.getUTCMonth(), e.getUTCDate()));
-    } else {
-      start = new Date(end.getTime() - (Number(range) - 1) * 86400000);
+  function ymd(d, tz) {
+    return tz === 'utc' ? [d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()] : [d.getFullYear(), d.getMonth(), d.getDate()];
+  }
+  function make(y, m, day, tz) { return tz === 'utc' ? new Date(Date.UTC(y, m, day)) : new Date(y, m, day); }
+  function startOfDay(d, tz) { var p = ymd(d, tz); return make(p[0], p[1], p[2], tz); }
+  function addDays(d, n, tz) { return startOfDay(new Date(d.getTime() + n * 86400000), tz); }
+  function dow(d, tz) { return tz === 'utc' ? d.getUTCDay() : d.getDay(); }
+
+  function periodWindow(period, anchor, tz) {
+    var day = startOfDay(anchor, tz);
+    if (period === 'daily') return { start: day, end: day, granularity: 'hour' };
+    if (period === 'weekly') {
+      var mondayOffset = (dow(day, tz) + 6) % 7;
+      var start = addDays(day, -mondayOffset, tz);
+      return { start: start, end: addDays(start, 6, tz), granularity: 'day' };
     }
-    var days = [];
-    for (var d = start; d <= end; d = new Date(d.getTime() + 86400000)) days.push(dayStr(d));
-    return days;
+    if (period === 'monthly') {
+      var p = ymd(day, tz);
+      return { start: make(p[0], p[1], 1, tz), end: make(p[0], p[1] + 1, 0, tz), granularity: 'day' };
+    }
+    if (period === 'yearly') {
+      var y = ymd(day, tz)[0];
+      return { start: make(y, 0, 1, tz), end: make(y, 11, 31, tz), granularity: 'month' };
+    }
+    // ytd
+    var nowDay = startOfDay(NOW, tz);
+    var ny = ymd(nowDay, tz)[0];
+    return { start: make(ny, 0, 1, tz), end: nowDay, granularity: 'day' };
   }
 
-  function sessionsInRange(range) {
-    if (range === 'all') return SESSIONS;
-    var now = new Date('2026-08-19T08:00:00Z'); // fixed "now" so this mockup renders deterministically
-    var cutoff;
-    if (range === 'today') cutoff = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    else if (range === 'month') cutoff = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-    else cutoff = new Date(now.getTime() - Number(range) * 86400000);
-    return SESSIONS.filter(function (s) { return new Date(s.ts) >= cutoff; });
+  function shiftAnchor(period, anchor, dir, tz) {
+    var day = startOfDay(anchor, tz);
+    if (period === 'daily') return addDays(day, dir, tz);
+    if (period === 'weekly') return addDays(day, dir * 7, tz);
+    if (period === 'monthly') { var p = ymd(day, tz); return make(p[0], p[1] + dir, 1, tz); }
+    if (period === 'yearly') { var y = ymd(day, tz)[0]; return make(y + dir, 0, 1, tz); }
+    return day; // ytd: no navigation
+  }
+
+  function pad2(n) { return String(n).padStart(2, '0'); }
+
+  function bucketKey(ts, granularity, tz) {
+    var d = new Date(ts);
+    var p = ymd(d, tz);
+    var hour = tz === 'utc' ? d.getUTCHours() : d.getHours();
+    if (granularity === 'hour') return p[0] + '-' + pad2(p[1] + 1) + '-' + pad2(p[2]) + 'T' + pad2(hour);
+    if (granularity === 'month') return p[0] + '-' + pad2(p[1] + 1);
+    return p[0] + '-' + pad2(p[1] + 1) + '-' + pad2(p[2]);
+  }
+
+  // Zero-fills the chart to every bucket in the window, not just buckets with
+  // an actual session — otherwise a quiet bucket reads as "no x-axis tick
+  // here" or (worse) collapses the chart to look like the filter didn't
+  // change, instead of an honest $0 bar. Same reasoning as maestro's own
+  // zero-fill in its Cumulative Spend and Tokens & Cost charts.
+  function zeroFillBuckets(win, tz) {
+    var keys = [];
+    if (win.granularity === 'hour') {
+      for (var h = 0; h < 24; h++) keys.push(bucketKey(new Date(win.start.getTime() + h * 3600000).toISOString(), 'hour', tz));
+      return keys;
+    }
+    if (win.granularity === 'month') {
+      var p = ymd(win.start, tz), y = p[0], m = p[1];
+      while (make(y, m, 1, tz) <= win.end) { keys.push(y + '-' + pad2(m + 1)); m += 1; }
+      return keys;
+    }
+    for (var d = win.start; d <= win.end; d = addDays(d, 1, tz)) keys.push(bucketKey(d.toISOString(), 'day', tz));
+    return keys;
+  }
+
+  function sessionsInWindow(sessions, win) {
+    var endExclusive = win.end.getTime() + 86400000;
+    return sessions.filter(function (s) {
+      var t = new Date(s.ts).getTime();
+      return t >= win.start.getTime() && t < endExclusive;
+    });
+  }
+
+  function anchorLabel(period, win) {
+    if (period === 'ytd') return NOW.getUTCFullYear() + ' to date';
+    var opts = period === 'yearly' ? { year: 'numeric' } : period === 'monthly' ? { year: 'numeric', month: 'long' } : { year: 'numeric', month: 'short', day: 'numeric' };
+    if (period === 'weekly') return win.start.toLocaleDateString(undefined, opts) + ' – ' + win.end.toLocaleDateString(undefined, opts);
+    return win.start.toLocaleDateString(undefined, opts);
+  }
+
+  function bucketAxisLabel(key, granularity) {
+    if (granularity === 'hour') return key.slice(-2) + ':00';
+    if (granularity === 'month') return new Date(key + '-01').toLocaleDateString(undefined, { month: 'short' });
+    return key.slice(5); // MM-DD
   }
 
   function rankRowsHtml(rows, valueFmt) {
@@ -463,11 +549,23 @@
     }).join('');
   }
 
-  function renderUsage(range) {
-    var sessions = sessionsInRange(range);
+  var usageState = { period: 'weekly', anchor: NOW, tz: 'utc' };
+
+  function renderUsage() {
+    var period = usageState.period, tz = usageState.tz;
+    var win = periodWindow(period, usageState.anchor, tz);
+    var sessions = sessionsInWindow(SESSIONS, win);
+
+    document.getElementById('anchor-nav').style.display = period === 'ytd' ? 'none' : 'flex';
+    document.getElementById('anchor-label').textContent = anchorLabel(period, win);
+    var earliest = SESSIONS.reduce(function (min, s) { return s.ts < min ? s.ts : min; }, SESSIONS[0].ts);
+    var prevDisabled = period === 'ytd' || win.start <= startOfDay(new Date(earliest), tz);
+    var nextDisabled = period === 'ytd' || win.end >= startOfDay(NOW, tz);
+    document.getElementById('anchor-prev').disabled = prevDisabled;
+    document.getElementById('anchor-next').disabled = nextDisabled;
 
     var totalCost = 0, totalIn = 0, totalOut = 0, totalCacheR = 0, totalCacheC = 0, totalCalls = 0;
-    var byModel = {}, byVersion = {}, bySubagent = {}, bySkill = {}, byDay = {};
+    var byModel = {}, byVersion = {}, bySubagent = {}, bySkill = {}, byBucket = {};
     sessions.forEach(function (s) {
       var cost = sessionCost(s);
       totalCost += cost; totalIn += s.input; totalOut += s.output;
@@ -476,8 +574,8 @@
       byVersion[s.version] = (byVersion[s.version] || 0) + cost;
       Object.keys(s.subagents).forEach(function (k) { bySubagent[k] = (bySubagent[k] || 0) + s.subagents[k]; });
       Object.keys(s.skills).forEach(function (k) { bySkill[k] = (bySkill[k] || 0) + s.skills[k]; });
-      var day = s.ts.slice(0, 10);
-      byDay[day] = (byDay[day] || 0) + cost;
+      var key = bucketKey(s.ts, win.granularity, tz);
+      byBucket[key] = (byBucket[key] || 0) + cost;
     });
     var totalTokens = totalIn + totalOut + totalCacheR + totalCacheC;
     var cacheHit = (totalCacheR + totalIn) > 0 ? (totalCacheR / (totalCacheR + totalIn) * 100) : 0;
@@ -497,14 +595,14 @@
     var svg = document.getElementById('usage-chart');
     var barsG = svg.querySelector('.bars'), labelsG = svg.querySelector('.labels');
     barsG.innerHTML = ''; labelsG.innerHTML = '';
-    var days = zeroFillDays(range);
-    if (days.length) {
-      var max = Math.max.apply(null, days.map(function (d) { return byDay[d] || 0; }).concat([0.01]));
-      var w = 700, h = 130, gap = Math.max(4, 10 - days.length);
-      var barW = Math.max(3, (w / days.length) - gap);
-      days.forEach(function (d, i) {
-        var dayCost = byDay[d] || 0;
-        var barH = (dayCost / max) * h;
+    var buckets = zeroFillBuckets(win, tz);
+    if (buckets.length) {
+      var max = Math.max.apply(null, buckets.map(function (b) { return byBucket[b] || 0; }).concat([0.01]));
+      var w = 700, h = 130, gap = Math.max(4, 10 - buckets.length);
+      var barW = Math.max(3, (w / buckets.length) - gap);
+      buckets.forEach(function (b, i) {
+        var bucketCost = byBucket[b] || 0;
+        var barH = (bucketCost / max) * h;
         var x = i * (barW + gap);
         var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         rect.setAttribute('class', 'bar');
@@ -512,16 +610,16 @@
         rect.setAttribute('width', barW); rect.setAttribute('height', Math.max(1, barH));
         rect.setAttribute('rx', 3);
         var title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-        title.textContent = d + ': ' + usd(dayCost);
+        title.textContent = b + ': ' + usd(bucketCost);
         rect.appendChild(title);
         barsG.appendChild(rect);
-        var labelEvery = Math.max(1, Math.ceil(days.length / 8));
+        var labelEvery = Math.max(1, Math.ceil(buckets.length / 8));
         if (i % labelEvery === 0) {
           var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
           text.setAttribute('class', 'axis');
           text.setAttribute('x', x + barW / 2); text.setAttribute('y', h + 16);
           text.setAttribute('text-anchor', 'middle');
-          text.textContent = d.slice(5);
+          text.textContent = bucketAxisLabel(b, win.granularity);
           labelsG.appendChild(text);
         }
       });
@@ -529,11 +627,11 @@
 
     var sorted = sessions.slice().sort(function (a, b) { return b.ts.localeCompare(a.ts); });
     document.getElementById('sessions-body').innerHTML = sorted.length ? sorted.map(function (s) {
-      var started = new Date(s.ts).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+      var started = new Date(s.ts).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: tz === 'utc' ? 'UTC' : undefined });
       return '<tr><td class="mono">' + s.id + '</td><td>' + started + '</td>' +
         '<td class="num tabular">' + fmt(s.calls) + '</td><td class="num tabular">' + usd(sessionCost(s)) + '</td>' +
         '<td>' + s.version + '</td></tr>';
-    }).join('') : '<tr><td colspan="5" class="empty">No sessions in this range.</td></tr>';
+    }).join('') : '<tr><td colspan="5" class="empty">No sessions in this window.</td></tr>';
   }
 
   function setTab(view, sub, pushHash) {
@@ -567,15 +665,37 @@
 
   window.addEventListener('hashchange', function () { setTab.apply(null, tabFromHash().concat([false])); });
 
-  document.querySelectorAll('#toolbar-usage .segmented button').forEach(function (btn) {
+  document.querySelectorAll('#period-group button').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      document.querySelectorAll('#toolbar-usage .segmented button').forEach(function (b) { b.setAttribute('aria-selected','false'); });
-      btn.setAttribute('aria-selected','true');
-      renderUsage(btn.dataset.range);
+      document.querySelectorAll('#period-group button').forEach(function (b) { b.setAttribute('aria-selected', 'false'); });
+      btn.setAttribute('aria-selected', 'true');
+      usageState.period = btn.dataset.period;
+      usageState.anchor = NOW;
+      renderUsage();
     });
   });
+  document.querySelectorAll('#tz-group button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('#tz-group button').forEach(function (b) { b.setAttribute('aria-selected', 'false'); });
+      btn.setAttribute('aria-selected', 'true');
+      usageState.tz = btn.dataset.tz;
+      renderUsage();
+    });
+  });
+  document.getElementById('anchor-prev').addEventListener('click', function () {
+    usageState.anchor = shiftAnchor(usageState.period, usageState.anchor, -1, usageState.tz);
+    renderUsage();
+  });
+  document.getElementById('anchor-next').addEventListener('click', function () {
+    usageState.anchor = shiftAnchor(usageState.period, usageState.anchor, 1, usageState.tz);
+    renderUsage();
+  });
+  document.getElementById('anchor-latest').addEventListener('click', function () {
+    usageState.anchor = NOW;
+    renderUsage();
+  });
 
-  renderUsage('7');
+  renderUsage();
 
   document.querySelectorAll('#toolbar-tracker .segmented button').forEach(function (btn) {
     btn.addEventListener('click', function () { setTab('tracker', btn.dataset.sub, true); });
