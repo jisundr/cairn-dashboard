@@ -1,7 +1,7 @@
 # User Flows: cairn-dashboard
 
 ## Metadata
-- User Flows Version: v0.7
+- User Flows Version: v0.8
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md
 - Author:
@@ -59,6 +59,7 @@
 - Author picks a Model or Version filter above the sessions table: table narrows to matching rows within the current window, no refetch; picking "All" clears that filter.
 - Author clicks Prev/Next below the sessions table: table pages through the current (possibly filtered) row set.
 - Author toggles the chart between Cost and Tokens: bars replot from the same bucketed window against the chosen metric, no refetch.
+- Author toggles the ranking panels between Window and All-time: the four panels (by-model, by-version, by-subagent, by-skill) recompute from either the current period window or the full session list, independent of the chart/stat-grid.
 
 **Error States**
 - `/api/usage` fetch fails (server not running, network blip): UI shows a stale-data indicator on the existing view rather than freezing silently or clearing to blank.
