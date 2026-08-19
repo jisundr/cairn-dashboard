@@ -330,22 +330,24 @@ export default function UsageTab() {
 
   return (
     <div>
-      <div role="group" aria-label="Period">
-        {(Object.keys(PERIOD_LABELS) as Period[]).map((p) => (
-          <button key={p} aria-selected={period === p} onClick={() => setPeriod(p)}>{PERIOD_LABELS[p]}</button>
-        ))}
-      </div>
-      {period !== 'ytd' && (
-        <div role="group" aria-label="Anchor navigation">
-          <button aria-label="Previous" disabled={prevDisabled} onClick={() => setAnchor(shiftAnchor(period, anchor, -1, tz))}>‹</button>
-          <span>{anchorLabel(period, win)}</span>
-          <button aria-label="Next" disabled={nextDisabled} onClick={() => setAnchor(shiftAnchor(period, anchor, 1, tz))}>›</button>
-          <button onClick={() => setAnchor(new Date())}>Latest</button>
+      <div className="toolbar">
+        <div className="segmented" role="group" aria-label="Period">
+          {(Object.keys(PERIOD_LABELS) as Period[]).map((p) => (
+            <button key={p} aria-selected={period === p} onClick={() => setPeriod(p)}>{PERIOD_LABELS[p]}</button>
+          ))}
         </div>
-      )}
-      <div role="group" aria-label="Timezone">
-        <button aria-selected={tz === 'utc'} onClick={() => setTz('utc')}>UTC</button>
-        <button aria-selected={tz === 'local'} onClick={() => setTz('local')}>Local</button>
+        {period !== 'ytd' && (
+          <div className="anchor-nav" role="group" aria-label="Anchor navigation">
+            <button className="icon-btn" aria-label="Previous" disabled={prevDisabled} onClick={() => setAnchor(shiftAnchor(period, anchor, -1, tz))}>‹</button>
+            <span className="anchor-label tabular">{anchorLabel(period, win)}</span>
+            <button className="icon-btn" aria-label="Next" disabled={nextDisabled} onClick={() => setAnchor(shiftAnchor(period, anchor, 1, tz))}>›</button>
+            <button className="anchor-latest-btn" onClick={() => setAnchor(new Date())}>Latest</button>
+          </div>
+        )}
+        <div className="segmented" role="group" aria-label="Timezone">
+          <button aria-selected={tz === 'utc'} onClick={() => setTz('utc')}>UTC</button>
+          <button aria-selected={tz === 'local'} onClick={() => setTz('local')}>Local</button>
+        </div>
       </div>
       {/* Shown first within the content area (after the toolbar above, which
           is REG-2 and stays put) — the heatmap is static (full history) and
@@ -379,44 +381,46 @@ export default function UsageTab() {
           </>
         )}
       </div>
-      <div>
-        <div>Cost: {usd(totals.cost)}</div>
-        <div>Tokens: {fmt(totalTokens)}</div>
-        <div>Calls: {fmt(totals.calls)}</div>
-        <div>Sessions: {fmt(sessions.length)}</div>
-        <div>Cache hit: {cacheHit.toFixed(1)}%</div>
-        {totals.unpriced_calls > 0 && (
-          <div>{totals.unpriced_calls} call(s) used a model with no pricing entry — excluded from cost total.</div>
-        )}
+      <div className="stat-grid">
+        <div className="stat"><div className="label">Cost</div><div className="value accent tabular">{usd(totals.cost)}</div></div>
+        <div className="stat"><div className="label">Tokens</div><div className="value tabular">{fmt(totalTokens)}</div></div>
+        <div className="stat"><div className="label">Calls</div><div className="value tabular">{fmt(totals.calls)}</div></div>
+        <div className="stat"><div className="label">Sessions</div><div className="value tabular">{fmt(sessions.length)}</div></div>
+        <div className="stat"><div className="label">Cache hit</div><div className="value tabular">{cacheHit.toFixed(1)}%</div></div>
       </div>
-      {([
-        ['model', 'By model'], ['version', 'By cairn version'],
-        ['subagent', 'Top subagents'], ['skill', 'Top skills'],
-      ] as [RankingDimension, string][]).map(([dim, label]) => {
-        const rows = rankings[dim]
-        const metric = dim === 'model' || dim === 'version' ? 'cost' : 'calls'
-        const rowMax = Math.max(...rows.map((r) => Number(r[metric] ?? 0)), 0.01)
-        return (
-          <div key={dim}>
-            <h3>{label}</h3>
-            {rows.length === 0 ? (
-              <div className="empty">No data yet.</div>
-            ) : (
-              rows.slice(0, 4).map((row, i) => {
-                const value = Number(row[metric] ?? 0)
-                return (
-                  <div key={i} className="rank-row">
-                    <div className="name">{String(row[dim])}</div>
-                    <div className="num tabular">{metric === 'cost' ? usd(value) : fmt(value)}</div>
-                    <div className="bar-track"><div className="bar-fill" style={{ width: `${((value / rowMax) * 100).toFixed(1)}%` }} /></div>
-                  </div>
-                )
-              })
-            )}
-          </div>
-        )
-      })}
-      <div className="chart-card">
+      {totals.unpriced_calls > 0 && (
+        <div className="empty">{totals.unpriced_calls} call(s) used a model with no pricing entry — excluded from cost total.</div>
+      )}
+      <div className="card-grid">
+        {([
+          ['model', 'By model'], ['version', 'By cairn version'],
+          ['subagent', 'Top subagents'], ['skill', 'Top skills'],
+        ] as [RankingDimension, string][]).map(([dim, label]) => {
+          const rows = rankings[dim]
+          const metric = dim === 'model' || dim === 'version' ? 'cost' : 'calls'
+          const rowMax = Math.max(...rows.map((r) => Number(r[metric] ?? 0)), 0.01)
+          return (
+            <div key={dim} className="card">
+              <div className="head">{label}</div>
+              {rows.length === 0 ? (
+                <div className="empty">No data yet.</div>
+              ) : (
+                rows.slice(0, 4).map((row, i) => {
+                  const value = Number(row[metric] ?? 0)
+                  return (
+                    <div key={i} className="rank-row">
+                      <div className="name">{String(row[dim])}</div>
+                      <div className="num tabular">{metric === 'cost' ? usd(value) : fmt(value)}</div>
+                      <div className="bar-track"><div className="bar-fill" style={{ width: `${((value / rowMax) * 100).toFixed(1)}%` }} /></div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          )
+        })}
+      </div>
+      <div className="card chart-card">
         <div className="head">Cost over time</div>
         <svg viewBox="0 0 700 150">
           {buckets.map((b, i) => {
@@ -438,66 +442,68 @@ export default function UsageTab() {
           })}
         </svg>
       </div>
-      <h3>Sessions</h3>
-      {sessions.length === 0 ? (
-        <div className="empty">No sessions in this window.</div>
-      ) : (
-        <>
-          <div role="group" aria-label="Sessions filter">
-            <label htmlFor="filter-model">Model</label>
-            <select id="filter-model" value={filterModel} onChange={(e) => { setFilterModel(e.target.value); setPage(0) }}>
-              <option value="all">All</option>
-              {modelOptions.map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
-            <label htmlFor="filter-version">Version</label>
-            <select id="filter-version" value={filterVersion} onChange={(e) => { setFilterVersion(e.target.value); setPage(0) }}>
-              <option value="all">All</option>
-              {versionOptions.map((v) => <option key={v} value={v}>{v}</option>)}
-            </select>
-          </div>
-          {filteredSessions.length === 0 ? (
-            <div className="empty">No sessions match this filter.</div>
-          ) : (
-            <>
-              <table>
-                <thead>
-                  <tr>
-                    {SESSION_COLUMNS.map(([key, label]) => (
-                      <th key={key}>
-                        <button onClick={() => toggleSort(key)}>
-                          {label}{sortKey === key ? (sortDir === 1 ? ' ▲' : ' ▼') : ''}
-                        </button>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {pageSessions.map((s) => (
-                    <tr key={s.session_id}>
-                      <td>{s.session_id}</td>
-                      <td>{s.timestamp ? new Date(s.timestamp).toLocaleString() : '?'}</td>
-                      <td>{s.models.join(', ')}</td>
-                      <td title={`Input: ${fmt(s.input_tokens)} · Output: ${fmt(s.output_tokens)} · Cache write: ${fmt(s.cache_creation_input_tokens)} · Cache read: ${fmt(s.cache_read_input_tokens)}`}>
-                        {fmt(totalSessionTokens(s))}
-                      </td>
-                      <td>{fmt(s.calls)}</td>
-                      <td>{usd(s.cost)}</td>
-                      <td>{s.version}</td>
+      <div className="card">
+        <div className="head">Sessions</div>
+        {sessions.length === 0 ? (
+          <div className="empty">No sessions in this window.</div>
+        ) : (
+          <>
+            <div role="group" aria-label="Sessions filter">
+              <label htmlFor="filter-model">Model</label>
+              <select id="filter-model" value={filterModel} onChange={(e) => { setFilterModel(e.target.value); setPage(0) }}>
+                <option value="all">All</option>
+                {modelOptions.map((m) => <option key={m} value={m}>{m}</option>)}
+              </select>
+              <label htmlFor="filter-version">Version</label>
+              <select id="filter-version" value={filterVersion} onChange={(e) => { setFilterVersion(e.target.value); setPage(0) }}>
+                <option value="all">All</option>
+                {versionOptions.map((v) => <option key={v} value={v}>{v}</option>)}
+              </select>
+            </div>
+            {filteredSessions.length === 0 ? (
+              <div className="empty">No sessions match this filter.</div>
+            ) : (
+              <>
+                <table>
+                  <thead>
+                    <tr>
+                      {SESSION_COLUMNS.map(([key, label]) => (
+                        <th key={key}>
+                          <button onClick={() => toggleSort(key)}>
+                            {label}{sortKey === key ? (sortDir === 1 ? ' ▲' : ' ▼') : ''}
+                          </button>
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-              {sortedSessions.length > PAGE_SIZE && (
-                <div role="group" aria-label="Sessions pagination">
-                  <button aria-label="Previous page" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>‹ Prev</button>
-                  <span>Page {page + 1} of {totalPages} ({sortedSessions.length} rows)</span>
-                  <button aria-label="Next page" disabled={page >= totalPages - 1} onClick={() => setPage((p) => p + 1)}>Next ›</button>
-                </div>
-              )}
-            </>
-          )}
-        </>
-      )}
+                  </thead>
+                  <tbody>
+                    {pageSessions.map((s) => (
+                      <tr key={s.session_id}>
+                        <td>{s.session_id}</td>
+                        <td>{s.timestamp ? new Date(s.timestamp).toLocaleString() : '?'}</td>
+                        <td>{s.models.join(', ')}</td>
+                        <td title={`Input: ${fmt(s.input_tokens)} · Output: ${fmt(s.output_tokens)} · Cache write: ${fmt(s.cache_creation_input_tokens)} · Cache read: ${fmt(s.cache_read_input_tokens)}`}>
+                          {fmt(totalSessionTokens(s))}
+                        </td>
+                        <td>{fmt(s.calls)}</td>
+                        <td>{usd(s.cost)}</td>
+                        <td>{s.version}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {sortedSessions.length > PAGE_SIZE && (
+                  <div role="group" aria-label="Sessions pagination">
+                    <button aria-label="Previous page" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>‹ Prev</button>
+                    <span>Page {page + 1} of {totalPages} ({sortedSessions.length} rows)</span>
+                    <button aria-label="Next page" disabled={page >= totalPages - 1} onClick={() => setPage((p) => p + 1)}>Next ›</button>
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}
+      </div>
     </div>
   )
 }

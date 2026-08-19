@@ -70,17 +70,35 @@ export interface Swarm {
 
 export const CHAIN_PHASES = ['PLAN', 'DOC-GATE', 'QA-RED', 'IMPLEMENT', 'QA-AUDIT', 'DOC-POST-IMPL', 'PUBLISH']
 
+// Dev-mode mock data: `npm run dev`'s local backend is often near-empty (0
+// sessions/tracker rows/swarms), which makes visual QA against the approved
+// mockup hard. `shouldUseMocks()` is true only when running under `vite`/
+// `npm run dev` (see ./mocks.ts for exactly which env value gates it, and
+// why). Vite statically replaces that value with the literal 'production' in
+// a production build (`vite build` / `tsc -b && vite build`), and Vitest
+// runs under its own non-'development' value, so `shouldUseMocks()`
+// evaluates false in both and every `fetchX()` below falls through to the
+// real `/api/...` call exactly as before this file existed — regardless of
+// whether the minifier also manages to strip the now provably-dead `if`
+// branches and the ./mocks fixture data out of dist/. Opt out during local
+// dev with `VITE_USE_MOCKS=false npm run dev` to exercise the real backend
+// instead.
+import { shouldUseMocks, MOCK_USAGE_DATA, MOCK_TRACKER_ROWS, MOCK_SWARMS } from './mocks'
+
 export async function fetchUsage(): Promise<UsageData> {
+  if (shouldUseMocks()) return MOCK_USAGE_DATA
   const res = await fetch('/api/usage')
   return res.json()
 }
 
 export async function fetchTracker(): Promise<TrackerRow[]> {
+  if (shouldUseMocks()) return MOCK_TRACKER_ROWS
   const res = await fetch('/api/tracker')
   return res.json()
 }
 
 export async function fetchSwarms(): Promise<Swarm[]> {
+  if (shouldUseMocks()) return MOCK_SWARMS
   const res = await fetch('/api/swarms')
   return res.json()
 }
