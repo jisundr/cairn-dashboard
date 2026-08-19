@@ -1,7 +1,7 @@
 # Design System: cairn-dashboard
 
 ## Metadata
-- Design System Version: v0.1
+- Design System Version: v0.2
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md
 - Author:
@@ -27,7 +27,7 @@ Modern, calm, developer-tool minimal — quiet confidence over expression. Not w
 ### Core Palette
 | Token | Value | Usage |
 |-------|-------|-------|
-| color-primary | #3d6fd9 | Primary actions, active tab indicator, key emphasis |
+| color-primary | #3d6fd9 | Primary actions, active tab indicator, key emphasis, "currently active/running" states (Swarms Running pill, current step in a progress timeline), Tracker's In Review column (reused rather than adding a 5th semantic color — both mean "needs attention now") |
 | color-secondary | #6b6b62 | Supporting accents, secondary text emphasis |
 | color-background | #f7f7f5 | Page background (light) |
 | color-surface | #ffffff | Card and panel backgrounds (light) |
