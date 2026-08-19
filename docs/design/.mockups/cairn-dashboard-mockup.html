@@ -150,6 +150,21 @@
   .pagination button:disabled { opacity: .35; cursor: default; }
   .pagination button:not(:disabled):hover { color: var(--text); }
 
+  /* CSS-only tooltip via data-tooltip — used instead of the native title
+     attribute for the Tokens breakdown, which is easy to miss (OS-styled,
+     ~1s hover delay before it appears, no dark-mode awareness). This one
+     shows immediately and matches the page's own palette. */
+  [data-tooltip] { position: relative; cursor: default; }
+  [data-tooltip]:hover::after {
+    content: attr(data-tooltip); position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%);
+    background: var(--text); color: var(--bg); font-size: .7rem; font-weight: 500; white-space: nowrap;
+    padding: .35rem .6rem; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.18); z-index: 20; pointer-events: none;
+  }
+  [data-tooltip]:hover::before {
+    content: ""; position: absolute; bottom: 122%; left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: var(--text); z-index: 20; pointer-events: none;
+  }
+
   /* Tracker: Board */
   .board { display: flex; gap: .8rem; overflow-x: auto; padding-bottom: .4rem; align-items: flex-start; min-height: calc(100vh - 140px); }
   .col { flex: 0 0 240px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: .7rem; }
@@ -293,8 +308,8 @@
 
 <div class="toolbar" id="toolbar-usage">
   <div class="segmented" role="group" aria-label="Period" id="period-group">
-    <button aria-selected="false" data-period="daily">Daily</button>
-    <button aria-selected="true" data-period="weekly">Weekly</button>
+    <button aria-selected="true" data-period="daily">Daily</button>
+    <button aria-selected="false" data-period="weekly">Weekly</button>
     <button aria-selected="false" data-period="monthly">Monthly</button>
     <button aria-selected="false" data-period="yearly">Yearly</button>
     <button aria-selected="false" data-period="ytd">YTD</button>
@@ -306,8 +321,8 @@
     <button id="anchor-latest">Latest</button>
   </div>
   <div class="segmented" role="group" aria-label="Timezone" id="tz-group">
-    <button aria-selected="true" data-tz="utc">UTC</button>
-    <button aria-selected="false" data-tz="local">Local</button>
+    <button aria-selected="false" data-tz="utc">UTC</button>
+    <button aria-selected="true" data-tz="local" id="tz-local-btn">Local</button>
   </div>
   <span class="info-icon" tabindex="0" role="button" aria-label="What do these controls mean?"
     title="Period: Daily/Weekly/Monthly/Yearly are calendar-aligned to the anchor date; YTD is always this year to date, no anchor.&#10;Prev/next: step the anchor by one period unit; disabled past the earliest session or past today.&#10;Latest: jump the anchor back to today.&#10;UTC/Local: shifts hour/day/month bucket boundaries and all timestamps.">&#9432;</span>
@@ -786,7 +801,7 @@
       var tokens = totalSessionTokens(s);
       var title = 'Input: ' + fmt(s.input) + ' · Output: ' + fmt(s.output) + ' · Cache write: ' + fmt(s.cacheCreate) + ' · Cache read: ' + fmt(s.cacheRead);
       return '<tr><td class="mono">' + s.id + '</td><td>' + started + '</td><td>' + modelsStr + '</td>' +
-        '<td class="num tabular" title="' + title + '">' + fmt(tokens) + '</td>' +
+        '<td class="num tabular" data-tooltip="' + title + '">' + fmt(tokens) + '</td>' +
         '<td class="num tabular">' + fmt(s.calls) + '</td><td class="num tabular">' + usd(sessionCost(s)) + '</td>' +
         '<td>' + s.version + '</td></tr>';
     }).join('');
@@ -820,7 +835,7 @@
     renderSessionsTable(lastWindowSessions, usageState.tz);
   });
 
-  var usageState = { period: 'weekly', anchor: NOW, tz: 'utc' };
+  var usageState = { period: 'daily', anchor: NOW, tz: 'local' };
 
   function renderUsage() {
     var period = usageState.period, tz = usageState.tz;
@@ -950,6 +965,9 @@
       renderUsage();
     });
   });
+  // "Local" alone doesn't say which timezone that is — label it with the
+  // browser's resolved IANA zone so it's unambiguous at a glance.
+  document.getElementById('tz-local-btn').textContent = 'Local (' + Intl.DateTimeFormat().resolvedOptions().timeZone + ')';
   document.getElementById('anchor-prev').addEventListener('click', function () {
     usageState.anchor = shiftAnchor(usageState.period, usageState.anchor, -1, usageState.tz);
     renderUsage();
