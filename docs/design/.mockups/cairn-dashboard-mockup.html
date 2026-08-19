@@ -132,7 +132,7 @@
   /* Tracker: Roadmap */
   .rmap { display: flex; gap: 1.3rem; overflow-x: auto; padding: .5rem 0 1rem; }
   .rstation { flex: 0 0 230px; }
-  .rnoderow { position: relative; height: 32px; display: flex; align-items: center; margin-bottom: .6rem; }
+  .rnoderow { position: relative; height: 32px; display: flex; align-items: center; justify-content: center; margin-bottom: .6rem; }
   .rnoderow::before { content: ""; position: absolute; top: 50%; left: 0; right: 0; height: 2px; transform: translateY(-50%); background: var(--border); }
   .rstation.filled .rnoderow::before { background: var(--primary); }
   .rstation:first-child .rnoderow::before { left: 50%; }
