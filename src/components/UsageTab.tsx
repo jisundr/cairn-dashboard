@@ -448,17 +448,21 @@ export default function UsageTab() {
           <div className="empty">No sessions in this window.</div>
         ) : (
           <>
-            <div role="group" aria-label="Sessions filter">
+            <div className="filters" role="group" aria-label="Sessions filter">
               <label htmlFor="filter-model">Model</label>
-              <select id="filter-model" value={filterModel} onChange={(e) => { setFilterModel(e.target.value); setPage(0) }}>
-                <option value="all">All</option>
-                {modelOptions.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
+              <div className="select-wrap">
+                <select id="filter-model" value={filterModel} onChange={(e) => { setFilterModel(e.target.value); setPage(0) }}>
+                  <option value="all">All</option>
+                  {modelOptions.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </div>
               <label htmlFor="filter-version">Version</label>
-              <select id="filter-version" value={filterVersion} onChange={(e) => { setFilterVersion(e.target.value); setPage(0) }}>
-                <option value="all">All</option>
-                {versionOptions.map((v) => <option key={v} value={v}>{v}</option>)}
-              </select>
+              <div className="select-wrap">
+                <select id="filter-version" value={filterVersion} onChange={(e) => { setFilterVersion(e.target.value); setPage(0) }}>
+                  <option value="all">All</option>
+                  {versionOptions.map((v) => <option key={v} value={v}>{v}</option>)}
+                </select>
+              </div>
             </div>
             {filteredSessions.length === 0 ? (
               <div className="empty">No sessions match this filter.</div>
