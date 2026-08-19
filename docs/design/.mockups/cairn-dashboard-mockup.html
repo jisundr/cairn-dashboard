@@ -95,13 +95,12 @@
     background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
     padding: 1rem 1.1rem; margin-bottom: .9rem;
   }
-  .card .head, .section-toolbar .head { font-size: 1rem; color: var(--text); letter-spacing: normal; margin-bottom: .8rem; font-weight: 600; }
-  .section-toolbar { display: flex; align-items: center; justify-content: space-between; gap: .5rem; flex-wrap: wrap; }
-  .section-toolbar .head { margin-bottom: 0; }
+  .card .head { font-size: 1rem; color: var(--text); letter-spacing: normal; margin-bottom: .8rem; font-weight: 600; }
   .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: .9rem; margin-bottom: .9rem; }
 
   .chart-card .head-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: .8rem; flex-wrap: wrap; gap: .5rem; }
   .chart-card .head-row .head { margin-bottom: 0; }
+  .chart-toggles { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
   .chart-card svg { width: 100%; height: 140px; overflow: visible; display: block; }
   .chart-card .bar { fill: var(--primary); opacity: .85; }
   .chart-card .axis { font-size: 9px; fill: var(--text-faint); }
@@ -372,13 +371,6 @@
       <div class="stat"><div class="label">Sessions</div><div class="value tabular" id="stat-sessions">0</div></div>
       <div class="stat"><div class="label">Cache hit</div><div class="value tabular" id="stat-cachehit">0%</div></div>
     </div>
-    <div class="section-toolbar">
-      <div class="head">Rankings</div>
-      <div class="segmented" role="group" aria-label="Ranking scope" id="ranking-scope-group">
-        <button aria-selected="true" data-scope="window">Window</button>
-        <button aria-selected="false" data-scope="all">All-time</button>
-      </div>
-    </div>
     <div class="card-grid">
       <div class="card">
         <div class="head">By model</div>
@@ -400,9 +392,15 @@
     <div class="card chart-card">
       <div class="head-row">
         <div class="head">Usage over time</div>
-        <div class="segmented" role="group" aria-label="Chart metric" id="metric-group">
-          <button aria-selected="true" data-metric="cost">Cost</button>
-          <button aria-selected="false" data-metric="tokens">Tokens</button>
+        <div class="chart-toggles">
+          <div class="segmented" role="group" aria-label="Chart scope" id="scope-group">
+            <button aria-selected="true" data-scope="window">Window</button>
+            <button aria-selected="false" data-scope="all">All-time</button>
+          </div>
+          <div class="segmented" role="group" aria-label="Chart metric" id="metric-group">
+            <button aria-selected="true" data-metric="cost">Cost</button>
+            <button aria-selected="false" data-metric="tokens">Tokens</button>
+          </div>
         </div>
       </div>
       <svg viewBox="0 0 700 150" preserveAspectRatio="none" id="usage-chart">
@@ -852,10 +850,9 @@
     renderSessionsTable(lastWindowSessions, usageState.tz);
   });
 
-  // Ranking panels aggregate over either the windowed sessions (scope
-  // "window", matching the chart/stat-grid) or the full SESSIONS list (scope
-  // "all") — a separate pass from the totals/chart loop below, since the two
-  // are independently scoped.
+  // Ranking panels always aggregate over the windowed sessions — matching
+  // the stat grid, unlike the chart below which has its own independent
+  // Window/All-time scope.
   function aggregateRankings(list) {
     var byModel = {}, byVersion = {}, bySubagent = {}, bySkill = {};
     list.forEach(function (s) {
@@ -868,7 +865,19 @@
     return { byModel: byModel, byVersion: byVersion, bySubagent: bySubagent, bySkill: bySkill };
   }
 
-  var usageState = { period: 'daily', anchor: NOW, tz: 'local', metric: 'cost', rankingsScope: 'window' };
+  // The chart's All-time scope, independent of period/anchor — same
+  // full-history-from-Jan-1-of-earliest-year framing as the heatmap, but
+  // monthly buckets (not a day-cell grid) since one bar per day over
+  // multiple years would be unreadably dense.
+  function allTimeWindow(sessions, tz) {
+    var withTs = sessions.filter(function (s) { return s.ts; });
+    if (!withTs.length) return { start: startOfDay(NOW, tz), end: startOfDay(NOW, tz), granularity: 'month' };
+    var earliest = withTs.reduce(function (min, s) { return s.ts < min ? s.ts : min; }, withTs[0].ts);
+    var y = ymd(new Date(earliest), tz)[0];
+    return { start: make(y, 0, 1, tz), end: startOfDay(NOW, tz), granularity: 'month' };
+  }
+
+  var usageState = { period: 'daily', anchor: NOW, tz: 'local', metric: 'cost', chartScope: 'window' };
 
   function renderUsage() {
     var period = usageState.period, tz = usageState.tz;
@@ -886,16 +895,21 @@
     document.getElementById('anchor-next').disabled = nextDisabled;
 
     var totalCost = 0, totalIn = 0, totalOut = 0, totalCacheR = 0, totalCacheC = 0, totalCalls = 0;
-    var byBucket = {};
     sessions.forEach(function (s) {
       var cost = sessionCost(s);
       totalCost += cost; totalIn += s.input; totalOut += s.output;
       totalCacheR += s.cacheRead; totalCacheC += s.cacheCreate; totalCalls += s.calls;
-      var key = bucketKey(s.ts, win.granularity, tz);
-      var metricValue = usageState.metric === 'tokens' ? totalSessionTokens(s) : cost;
+    });
+    var rankings = aggregateRankings(sessions);
+
+    var chartWin = usageState.chartScope === 'all' ? allTimeWindow(SESSIONS, tz) : win;
+    var chartSessions = usageState.chartScope === 'all' ? SESSIONS : sessions;
+    var byBucket = {};
+    chartSessions.forEach(function (s) {
+      var key = bucketKey(s.ts, chartWin.granularity, tz);
+      var metricValue = usageState.metric === 'tokens' ? totalSessionTokens(s) : sessionCost(s);
       byBucket[key] = (byBucket[key] || 0) + metricValue;
     });
-    var rankings = aggregateRankings(usageState.rankingsScope === 'all' ? SESSIONS : sessions);
     var totalTokens = totalIn + totalOut + totalCacheR + totalCacheC;
     var cacheHit = (totalCacheR + totalIn) > 0 ? (totalCacheR / (totalCacheR + totalIn) * 100) : 0;
 
@@ -914,7 +928,7 @@
     var svg = document.getElementById('usage-chart');
     var barsG = svg.querySelector('.bars'), labelsG = svg.querySelector('.labels');
     barsG.innerHTML = ''; labelsG.innerHTML = '';
-    var buckets = zeroFillBuckets(win, tz);
+    var buckets = zeroFillBuckets(chartWin, tz);
     if (buckets.length) {
       var max = Math.max.apply(null, buckets.map(function (b) { return byBucket[b] || 0; }).concat([0.01]));
       var w = 700, h = 130, gap = Math.max(4, 10 - buckets.length);
@@ -938,7 +952,7 @@
           text.setAttribute('class', 'axis');
           text.setAttribute('x', x + barW / 2); text.setAttribute('y', h + 16);
           text.setAttribute('text-anchor', 'middle');
-          text.textContent = bucketAxisLabel(b, win.granularity);
+          text.textContent = bucketAxisLabel(b, chartWin.granularity);
           labelsG.appendChild(text);
         }
       });
@@ -1008,11 +1022,11 @@
       renderUsage();
     });
   });
-  document.querySelectorAll('#ranking-scope-group button').forEach(function (btn) {
+  document.querySelectorAll('#scope-group button').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      document.querySelectorAll('#ranking-scope-group button').forEach(function (b) { b.setAttribute('aria-selected', 'false'); });
+      document.querySelectorAll('#scope-group button').forEach(function (b) { b.setAttribute('aria-selected', 'false'); });
       btn.setAttribute('aria-selected', 'true');
-      usageState.rankingsScope = btn.dataset.scope;
+      usageState.chartScope = btn.dataset.scope;
       renderUsage();
     });
   });
