@@ -121,9 +121,10 @@
   .icard.is-done { color: var(--text-faint); text-decoration: line-through; }
 
   /* Swarms: list + detail split */
-  .swarms-layout { display: flex; gap: 1rem; align-items: flex-start; margin-top: 1rem; }
-  .swarm-list-pane { flex: 0 0 38%; display: flex; flex-direction: column; gap: .5rem; }
-  .swarm-detail-pane { flex: 1 1 62%; min-width: 0; }
+  .swarms-layout { display: flex; gap: 1rem; align-items: stretch; margin-top: 1rem; min-height: calc(100vh - 140px); }
+  .swarm-list-pane { flex: 0 0 38%; display: flex; flex-direction: column; gap: .5rem; align-content: flex-start; }
+  .swarm-detail-pane { flex: 1 1 62%; min-width: 0; display: flex; }
+  .swarm-detail-pane > .detail-card, .swarm-detail-pane > .detail-empty { flex: 1 1 auto; }
 
   .swarm-list-item {
     background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
@@ -173,7 +174,7 @@
   }
 
   .empty { color: var(--text-faint); font-size: .84rem; padding: 2rem 0; text-align: center; }
-  .detail-empty { background: var(--surface); border: 1px dashed var(--border); border-radius: 10px; padding: 3rem 1rem; color: var(--text-faint); font-size: .84rem; text-align: center; }
+  .detail-empty { background: var(--surface); border: 1px dashed var(--border); border-radius: 10px; padding: 3rem 1rem; color: var(--text-faint); font-size: .84rem; text-align: center; display: flex; align-items: center; justify-content: center; }
 
   @media (max-width: 720px) {
     .stat-grid { grid-template-columns: repeat(2, 1fr); }
