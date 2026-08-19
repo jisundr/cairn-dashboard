@@ -1,7 +1,7 @@
 # UI Layout Specification: cairn-dashboard
 
 ## Metadata
-- UI Layout Specification Version: v0.8
+- UI Layout Specification Version: v0.9
 - Last Updated: 2026-08-19
 - Derived From: docs/design/ux-spec.md
 - Author:
@@ -35,11 +35,13 @@ Main Content Area (REG-3)
                     shown first because it does not respond to REG-2's
                     period/anchor filter, only re-buckets on tz toggle)
   └ Stat Grid (cost, tokens, calls, sessions, cache-hit)
-  └ Ranking lists (by-model, by-version, by-subagent, by-skill; own
-                    Window/All-time scope toggle, independent of REG-2)
-  └ Cost-over-time chart (Cost/Tokens metric toggle; 24 hourly buckets for
-                           Daily; daily buckets for Weekly/Monthly/YTD;
-                           monthly buckets for Yearly)
+  └ Ranking lists (by-model, by-version, by-subagent, by-skill; always
+                    scoped to REG-2's period/anchor window)
+  └ Cost-over-time chart (Window/All-time scope toggle + Cost/Tokens metric
+                           toggle; Window: 24 hourly buckets for Daily, daily
+                           for Weekly/Monthly/YTD, monthly for Yearly;
+                           All-time: monthly buckets over full history,
+                           independent of REG-2)
   └ Sessions table (Model/Version filter, sortable columns, pagination)
 ```
 
@@ -59,10 +61,10 @@ Usage Screen
       │         └── DayCell × 7 (empty-padding cells at the grid's edges)
       ├── StatGrid
       │    └── StatTile × 5
-      ├── RankingScopeToggle (Window, All-time)
       ├── RankingSection × 4 (by-model, by-version, by-subagent, by-skill)
       │    └── RankRow × N
       ├── CostChart
+      │    ├── ScopeToggle (Window, All-time)
       │    └── MetricToggle (Cost, Tokens)
       └── SessionsTable
            ├── SessionsFilterBar (Model select, Version select — both default "All")
@@ -172,7 +174,7 @@ Swarms Screen
 |--------|--------|-----------|-------|
 | Usage | REG-1 | TopNav | Shared across all screens |
 | Usage | REG-2 | PeriodToolbar | 5 period buttons + anchor nav + UTC/Local toggle + info icon |
-| Usage | REG-3 | StatGrid, CostChart, UsageHeatmap, RankingSection ×4, SessionsTable | Heatmap always shows full history, independent of REG-2's period/anchor. SessionsTable adds its own Model/Version filter, sortable headers, and pagination on top of REG-2's period window. |
+| Usage | REG-3 | StatGrid, CostChart, UsageHeatmap, RankingSection ×4, SessionsTable | Heatmap always shows full history, independent of REG-2's period/anchor. CostChart has its own Window/All-time scope toggle, independent of REG-2. RankingSection always matches REG-2's window (no independent scope). SessionsTable adds its own Model/Version filter, sortable headers, and pagination on top of REG-2's period window. |
 | Tracker | REG-1 | TopNav | Shared |
 | Tracker | REG-2 | SubViewToolbar | Board/Roadmap toggle |
 | Tracker | REG-3 | BoardView or RoadmapView | Mutually exclusive, one active at a time |

@@ -1,7 +1,7 @@
 # UX Specification: cairn-dashboard
 
 ## Metadata
-- UX Specification Version: v0.10
+- UX Specification Version: v0.11
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md, docs/requirements/user-flows.md
 - Author:
@@ -119,8 +119,8 @@ Direct navigation via URL hash (`#usage`, `#tracker`, `#tracker/road`, `#swarms`
 | Click a sessions-table column header | Cairn author | Table sorts by that column ascending; clicking the same header again reverses to descending |
 | Pick a Model or Version filter above the sessions table | Cairn author | Table narrows to matching rows within the current window, no refetch; picking "All" clears that filter |
 | Click sessions-table Prev/Next | Cairn author | Table pages through the current (possibly filtered) row set |
-| Toggle the chart's Cost/Tokens metric | Cairn author | Chart replots the same bucketed window against the chosen metric, no refetch |
-| Toggle the ranking panels' Window/All-time scope | Cairn author | By-model/by-version/by-subagent/by-skill recompute from the period window or full history, independent of the chart/stat-grid/sessions-table |
+| Toggle the chart's Cost/Tokens metric | Cairn author | Chart replots the same window against the chosen metric, no refetch |
+| Toggle the chart's Window/All-time scope | Cairn author | Chart replots from the period/anchor window or full session history (monthly buckets), independent of the period/anchor toolbar; stat grid, ranking panels, and sessions table are unaffected |
 | (passive) Wait for the 4s poll | Cairn author | View updates in place with new usage data, no visible reload |
 
 **Permission Rules:**
