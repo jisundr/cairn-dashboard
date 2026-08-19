@@ -836,8 +836,7 @@
   });
 
   // Ranking panels always aggregate over the windowed sessions — matching
-  // the stat grid, unlike the chart below which has its own independent
-  // Window/All-time scope.
+  // the stat grid and the chart below, neither of which has a scope toggle.
   function aggregateRankings(list) {
     var byModel = {}, byVersion = {}, bySubagent = {}, bySkill = {};
     list.forEach(function (s) {
@@ -1023,7 +1022,7 @@
         { phase: 'PLAN', note: 'plan read, worktree created', time: '31m ago' },
       ],
       paneTail: 'qa-engineer: feasibility check flagged an ambiguity in\n' +
-        'FR-007 (date-range scope). Waiting on a decision — proceed\n' +
+        'FR-007 (period/anchor scope). Waiting on a decision — proceed\n' +
         'with client-side recompute as specced, or reopen the FR?\n\n' +
         'Phase: QA-RED → HANDOFF NEEDED\n' +
         'Awaiting: human decision on scope ambiguity',
