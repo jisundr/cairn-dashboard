@@ -1,7 +1,7 @@
 # Product Requirements Document: cairn-dashboard
 
 ## Metadata
-- PRD Version: v0.3
+- PRD Version: v0.4
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/project-definition.md
 - Author:
@@ -24,7 +24,7 @@ cairn-dashboard is a local, single-user web dashboard giving real-time visibilit
 |---|---|---|
 | FR-001 | Usage tab: cost/token totals, cost-over-time chart, by-model/by-version/by-subagent/by-skill rankings, sessions table | Must |
 | FR-002 | Tracker tab: Board (Status-column kanban) and Roadmap (Milestone-grouped) views from `docs/.tasks/TRACKER.md` | Must |
-| FR-003 | Swarms tab: list + detail view of `Mode: Unattended` tasks. List: phase, tmux liveness, elapsed time. Detail panel (opens on click, right side): phase-progress timeline, branch, worktree, elapsed time, recent-history log, `HANDOFF NEEDED` pane tail, stalled indicator (authoritative + soft hint) | Must |
+| FR-003 | Swarms tab: list + detail view of `Mode: Unattended` tasks. List: phase, tmux liveness, elapsed time, sortable (Priority default / Recent activity / Name). Detail panel (opens on click, right side): phase-progress timeline, branch, worktree, elapsed time, recent-history log, `HANDOFF NEEDED` pane tail, stalled indicator (authoritative + soft hint) | Must |
 | FR-004 | Frontend polls backend JSON APIs on a 4s interval for near-real-time updates | Must |
 | FR-005 | ~~Frontend ships as a static, pre-built bundle...~~ — merged into NFR-001 (non-functional constraint, not a separate user-facing behavior) | Merged |
 | FR-006 | Existing `--task-report`/`--window-report` CLI report entry points (used by `task-orchestrator`) keep working unchanged | Must |

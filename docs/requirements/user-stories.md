@@ -1,7 +1,7 @@
 # User Stories: cairn-dashboard
 
 ## Metadata
-- User Stories Version: v0.3
+- User Stories Version: v0.4
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md
 - Author:
@@ -61,6 +61,7 @@ As a cairn author, I want to see my running Unattended coding-chain swarms in a 
 **Acceptance Criteria**
 - [ ] Swarms tab lists only `Mode: Unattended` tasks — Attended tasks never appear here.
 - [ ] Left list shows each swarm's slug, phase, tmux liveness, and elapsed/last-activity time.
+- [ ] Left list is sortable — Priority (Handoff Needed → Stalled → Running → Done), Recent activity (most recent `HISTORY.md` update first), or Name (chronological by date-prefixed slug) — Priority is the default. Sort selection persists across polls, recomputed client-side, no refetch.
 - [ ] Clicking a swarm selects it and opens its detail in a right-side panel; the list stays visible and another swarm can be selected without navigating away. No selection shows an empty-state right panel ("Select a swarm to see details").
 - [ ] Detail panel shows a phase-progress timeline (PLAN → DOC-GATE → QA-RED → IMPLEMENT → QA-AUDIT → DOC-POST-IMPL → PUBLISH) with the current phase highlighted, computed from the swarm's current `phase` value's position in that fixed order.
 - [ ] Detail panel shows branch, worktree, and elapsed/last-activity time.

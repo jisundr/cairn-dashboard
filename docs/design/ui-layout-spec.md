@@ -1,7 +1,7 @@
 # UI Layout Specification: cairn-dashboard
 
 ## Metadata
-- UI Layout Specification Version: v0.2
+- UI Layout Specification Version: v0.3
 - Last Updated: 2026-08-19
 - Derived From: docs/design/ux-spec.md
 - Author:
@@ -15,7 +15,7 @@
 | Region ID | Region Name | Scope | Description |
 |-----------|-------------|-------|-------------|
 | REG-1 | Top Nav | Global | Tab bar (Usage / Tracker / Swarms), always visible, present on every screen |
-| REG-2 | Screen Toolbar | Per-screen | Secondary controls specific to the active screen — Usage's date-range buttons, Tracker's Board/Roadmap sub-tabs. Absent on Swarms (no secondary controls). |
+| REG-2 | Screen Toolbar | Per-screen | Secondary controls specific to the active screen — Usage's date-range buttons, Tracker's Board/Roadmap sub-tabs, Swarms' sort-order control. |
 | REG-3 | Main Content Area | Per-screen | The screen's primary content, fills remaining vertical space below REG-1/REG-2 |
 | REG-4 | Detail Pane | Swarms only | Right-hand panel within Swarms' Main Content Area, showing the selected swarm's full detail; empty-state prompt when nothing is selected |
 
@@ -108,9 +108,10 @@ Tracker Screen
 **Layout Structure:**
 ```
 Top Nav (REG-1)
+Screen Toolbar (REG-2): sort-order control (Priority / Recent activity / Name)
 Main Content Area (REG-3)
   ├ List Pane (~40% width)
-  │   └ Swarm list item × N (one per Mode:Unattended task)
+  │   └ Swarm list item × N (one per Mode:Unattended task), ordered per REG-2
   │       └ slug, phase, tmux liveness, elapsed time
   └ Detail Pane (~60% width, REG-4)
       └ (no selection) empty-state prompt
@@ -122,6 +123,8 @@ Main Content Area (REG-3)
 ```
 Swarms Screen
  ├── TopNav (shared)
+ ├── SortToolbar (REG-2)
+ │    └── SortButton × 3 (Priority, Recent activity, Name)
  └── MainContent
       ├── SwarmList (List Pane)
       │    └── SwarmListItem × N
@@ -157,7 +160,8 @@ Swarms Screen
 | Tracker | REG-2 | SubViewToolbar | Board/Roadmap toggle |
 | Tracker | REG-3 | BoardView or RoadmapView | Mutually exclusive, one active at a time |
 | Swarms | REG-1 | TopNav | Shared |
-| Swarms | REG-3 | SwarmList | No REG-2 toolbar on this screen; list pane within REG-3 |
+| Swarms | REG-2 | SortToolbar | Priority / Recent activity / Name |
+| Swarms | REG-3 | SwarmList | List pane within REG-3, ordered per REG-2 |
 | Swarms | REG-4 | SwarmDetailPanel | Right pane; empty-state or selected-swarm detail |
 
 ---
