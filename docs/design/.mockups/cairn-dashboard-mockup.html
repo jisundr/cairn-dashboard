@@ -107,25 +107,45 @@
   .col h2 > span:last-child { font-size: .78rem; color: var(--text-faint); font-weight: 400; }
   .col h2 .name { display: flex; align-items: center; gap: .4rem; }
   .col h2 .name::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--text-faint); flex: 0 0 auto; }
+  /* Explicit per-status dot color, all 6 statuses (Idea stays neutral --text-faint, intentional "no urgency") */
+  .col-idea h2 .name::before { background: var(--text-faint); }
   .col-groomed h2 .name::before { background: var(--info); }
+  .col-review h2 .name::before { background: var(--primary); }
   .col-progress h2 .name::before { background: var(--warning); }
   .col-blocked h2 .name::before { background: var(--error); }
   .col-done h2 .name::before { background: var(--success); }
-  .task-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .55rem .65rem; margin-bottom: .55rem; }
-  .task-card .milestone { font-size: .64rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: .04em; margin-bottom: .25rem; }
-  .task-card .slug { font-weight: 600; font-size: .8rem; }
-  .task-card .scope { color: var(--text-dim); font-size: .76rem; margin-top: .2rem; line-height: 1.35; }
+  .task-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: .75rem 1rem; margin-bottom: .55rem; }
+  .task-card .milestone { font-size: .6875rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: .04em; margin-bottom: .3rem; }
+  .task-card .slug { font-weight: 600; font-size: .8rem; display: flex; align-items: center; gap: .4rem; }
+  /* Status dot on the card itself too — not just the column header — so a card
+     stays self-identifying once scrolled away from it. Same dot, not a border
+     accent: a colored border-left on a rounded card is the AI-UI tell the
+     Swarms tab's own Board/roadmap redesign already fixed once this session. */
+  .task-card .slug::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--text-faint); flex: 0 0 auto; }
+  .col-groomed .task-card .slug::before { background: var(--info); }
+  .col-review .task-card .slug::before { background: var(--primary); }
+  .col-progress .task-card .slug::before { background: var(--warning); }
+  .col-blocked .task-card .slug::before { background: var(--error); }
+  .col-done .task-card .slug::before { background: var(--success); }
+  .task-card .scope { color: var(--text-dim); font-size: .76rem; margin-top: .3rem; line-height: 1.35; }
 
   /* Tracker: Roadmap */
   .rmap { display: flex; gap: 1.3rem; overflow-x: auto; padding: .5rem 0 1rem; }
   .rstation { flex: 0 0 230px; }
-  .rstation .node { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: .72rem; font-weight: 700; margin-bottom: .6rem; border: 2px solid var(--border); color: var(--text-dim); }
+  .rnoderow { position: relative; height: 32px; display: flex; align-items: center; margin-bottom: .6rem; }
+  .rnoderow::before { content: ""; position: absolute; top: 50%; left: 0; right: 0; height: 2px; transform: translateY(-50%); background: var(--border); }
+  .rstation.filled .rnoderow::before { background: var(--primary); }
+  .rstation:first-child .rnoderow::before { left: 50%; }
+  .rstation:last-child .rnoderow::before { right: 50%; }
+  .rstation .node { position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: .72rem; font-weight: 700; border: 2px solid var(--border); background: var(--bg); color: var(--text-dim); }
   .rstation.done .node { border-color: var(--success); background: var(--success); color: #fff; }
   .rstation.active .node { border-color: var(--primary); color: var(--primary); }
   .rstation .rname { font-weight: 600; font-size: .8rem; }
   .rstation .rcount { color: var(--text-faint); font-size: .7rem; margin-left: .3rem; font-weight: 400; }
-  .icard { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: .4rem .55rem; margin-top: .5rem; font-size: .76rem; }
-  .icard.is-done { color: var(--text-faint); text-decoration: line-through; }
+  .icard { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: .55rem .7rem; margin-top: .5rem; font-size: .76rem; display: flex; align-items: center; gap: .4rem; }
+  .icard::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--text-faint); flex: 0 0 auto; }
+  .icard.is-done::before { background: var(--success); }
+  .icard.is-done { color: var(--text-dim); }
 
   /* Swarms: list + detail split */
   .swarms-layout { display: flex; gap: 1rem; align-items: stretch; margin-top: 1rem; min-height: calc(100vh - 140px); }
@@ -317,7 +337,7 @@
         <div class="task-card"><div class="slug">landing-page</div><div class="scope">Marketing page for cairn plugin</div></div>
       </div>
       <div class="col col-review"><h2><span class="name">In Review</span><span>0</span></h2>
-        <div class="empty" style="padding:.5rem 0">—</div>
+        <div class="empty">Nothing in review right now.</div>
       </div>
       <div class="col col-blocked"><h2><span class="name">Blocked</span><span>1</span></h2>
         <div class="task-card"><div class="slug">impeccable-vendor</div><div class="scope">Waiting on marketplace approval</div></div>
@@ -328,16 +348,16 @@
       </div>
     </div>
     <div class="rmap" id="road" style="display:none">
-      <div class="rstation done"><div class="node">✓</div><div class="rname">Foundation<span class="rcount">2/2 · Done</span></div>
+      <div class="rstation done filled"><div class="rnoderow"><div class="node">✓</div></div><div class="rname">Foundation<span class="rcount">2/2 · Done</span></div>
         <div class="icard is-done">swarms-tab-backend — parse_state_md, discover_swarms</div>
         <div class="icard is-done">cairn-feedback — sanitized bug feedback flow</div>
       </div>
-      <div class="rstation active"><div class="node">2</div><div class="rname">v0.19<span class="rcount">1/3 · In progress</span></div>
+      <div class="rstation active filled"><div class="rnoderow"><div class="node">2</div></div><div class="rname">v0.19<span class="rcount">1/3 · In progress</span></div>
         <div class="icard is-done">swarms-tab-backend — parse_state_md, discover_swarms</div>
         <div class="icard">dashboard-react-redesign — Vite+React frontend, Swarms tab</div>
         <div class="icard">notes-local-file — per-user gitignored .harness file</div>
       </div>
-      <div class="rstation"><div class="node">3</div><div class="rname">Unsorted<span class="rcount">0/2 · Upcoming</span></div>
+      <div class="rstation"><div class="rnoderow"><div class="node">3</div></div><div class="rname">Unsorted<span class="rcount">0/2 · Upcoming</span></div>
         <div class="icard">cli-export — export usage as CSV</div>
         <div class="icard">landing-page — marketing page for cairn plugin</div>
       </div>
