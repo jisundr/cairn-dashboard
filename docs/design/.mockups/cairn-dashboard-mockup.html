@@ -95,7 +95,9 @@
     background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
     padding: 1rem 1.1rem; margin-bottom: .9rem;
   }
-  .card .head { font-size: 1rem; color: var(--text); letter-spacing: normal; margin-bottom: .8rem; font-weight: 600; }
+  .card .head, .section-toolbar .head { font-size: 1rem; color: var(--text); letter-spacing: normal; margin-bottom: .8rem; font-weight: 600; }
+  .section-toolbar { display: flex; align-items: center; justify-content: space-between; gap: .5rem; flex-wrap: wrap; }
+  .section-toolbar .head { margin-bottom: 0; }
   .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: .9rem; margin-bottom: .9rem; }
 
   .chart-card .head-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: .8rem; flex-wrap: wrap; gap: .5rem; }
@@ -370,18 +372,12 @@
       <div class="stat"><div class="label">Sessions</div><div class="value tabular" id="stat-sessions">0</div></div>
       <div class="stat"><div class="label">Cache hit</div><div class="value tabular" id="stat-cachehit">0%</div></div>
     </div>
-    <div class="card chart-card">
-      <div class="head-row">
-        <div class="head">Usage over time</div>
-        <div class="segmented" role="group" aria-label="Chart metric" id="metric-group">
-          <button aria-selected="true" data-metric="cost">Cost</button>
-          <button aria-selected="false" data-metric="tokens">Tokens</button>
-        </div>
+    <div class="section-toolbar">
+      <div class="head">Rankings</div>
+      <div class="segmented" role="group" aria-label="Ranking scope" id="ranking-scope-group">
+        <button aria-selected="true" data-scope="window">Window</button>
+        <button aria-selected="false" data-scope="all">All-time</button>
       </div>
-      <svg viewBox="0 0 700 150" preserveAspectRatio="none" id="usage-chart">
-        <g class="bars"></g>
-        <g class="labels"></g>
-      </svg>
     </div>
     <div class="card-grid">
       <div class="card">
@@ -400,6 +396,19 @@
         <div class="head">Top skills</div>
         <div id="by-skill"></div>
       </div>
+    </div>
+    <div class="card chart-card">
+      <div class="head-row">
+        <div class="head">Usage over time</div>
+        <div class="segmented" role="group" aria-label="Chart metric" id="metric-group">
+          <button aria-selected="true" data-metric="cost">Cost</button>
+          <button aria-selected="false" data-metric="tokens">Tokens</button>
+        </div>
+      </div>
+      <svg viewBox="0 0 700 150" preserveAspectRatio="none" id="usage-chart">
+        <g class="bars"></g>
+        <g class="labels"></g>
+      </svg>
     </div>
     <div class="card">
       <div class="head">Sessions</div>
@@ -843,7 +852,23 @@
     renderSessionsTable(lastWindowSessions, usageState.tz);
   });
 
-  var usageState = { period: 'daily', anchor: NOW, tz: 'local', metric: 'cost' };
+  // Ranking panels aggregate over either the windowed sessions (scope
+  // "window", matching the chart/stat-grid) or the full SESSIONS list (scope
+  // "all") — a separate pass from the totals/chart loop below, since the two
+  // are independently scoped.
+  function aggregateRankings(list) {
+    var byModel = {}, byVersion = {}, bySubagent = {}, bySkill = {};
+    list.forEach(function (s) {
+      var cost = sessionCost(s);
+      s.models.forEach(function (m) { byModel[m.model] = (byModel[m.model] || 0) + m.cost; });
+      byVersion[s.version] = (byVersion[s.version] || 0) + cost;
+      Object.keys(s.subagents).forEach(function (k) { bySubagent[k] = (bySubagent[k] || 0) + s.subagents[k]; });
+      Object.keys(s.skills).forEach(function (k) { bySkill[k] = (bySkill[k] || 0) + s.skills[k]; });
+    });
+    return { byModel: byModel, byVersion: byVersion, bySubagent: bySubagent, bySkill: bySkill };
+  }
+
+  var usageState = { period: 'daily', anchor: NOW, tz: 'local', metric: 'cost', rankingsScope: 'window' };
 
   function renderUsage() {
     var period = usageState.period, tz = usageState.tz;
@@ -861,19 +886,16 @@
     document.getElementById('anchor-next').disabled = nextDisabled;
 
     var totalCost = 0, totalIn = 0, totalOut = 0, totalCacheR = 0, totalCacheC = 0, totalCalls = 0;
-    var byModel = {}, byVersion = {}, bySubagent = {}, bySkill = {}, byBucket = {};
+    var byBucket = {};
     sessions.forEach(function (s) {
       var cost = sessionCost(s);
       totalCost += cost; totalIn += s.input; totalOut += s.output;
       totalCacheR += s.cacheRead; totalCacheC += s.cacheCreate; totalCalls += s.calls;
-      s.models.forEach(function (m) { byModel[m.model] = (byModel[m.model] || 0) + m.cost; });
-      byVersion[s.version] = (byVersion[s.version] || 0) + cost;
-      Object.keys(s.subagents).forEach(function (k) { bySubagent[k] = (bySubagent[k] || 0) + s.subagents[k]; });
-      Object.keys(s.skills).forEach(function (k) { bySkill[k] = (bySkill[k] || 0) + s.skills[k]; });
       var key = bucketKey(s.ts, win.granularity, tz);
       var metricValue = usageState.metric === 'tokens' ? totalSessionTokens(s) : cost;
       byBucket[key] = (byBucket[key] || 0) + metricValue;
     });
+    var rankings = aggregateRankings(usageState.rankingsScope === 'all' ? SESSIONS : sessions);
     var totalTokens = totalIn + totalOut + totalCacheR + totalCacheC;
     var cacheHit = (totalCacheR + totalIn) > 0 ? (totalCacheR / (totalCacheR + totalIn) * 100) : 0;
 
@@ -884,10 +906,10 @@
     document.getElementById('stat-cachehit').textContent = cacheHit.toFixed(1) + '%';
 
     function toRows(obj) { return Object.keys(obj).map(function (k) { return { name: k, value: obj[k] }; }).sort(function (a, b) { return b.value - a.value; }); }
-    document.getElementById('by-model').innerHTML = rankRowsHtml(toRows(byModel), usd);
-    document.getElementById('by-version').innerHTML = rankRowsHtml(toRows(byVersion), usd);
-    document.getElementById('by-subagent').innerHTML = rankRowsHtml(toRows(bySubagent), fmt);
-    document.getElementById('by-skill').innerHTML = rankRowsHtml(toRows(bySkill), fmt);
+    document.getElementById('by-model').innerHTML = rankRowsHtml(toRows(rankings.byModel), usd);
+    document.getElementById('by-version').innerHTML = rankRowsHtml(toRows(rankings.byVersion), usd);
+    document.getElementById('by-subagent').innerHTML = rankRowsHtml(toRows(rankings.bySubagent), fmt);
+    document.getElementById('by-skill').innerHTML = rankRowsHtml(toRows(rankings.bySkill), fmt);
 
     var svg = document.getElementById('usage-chart');
     var barsG = svg.querySelector('.bars'), labelsG = svg.querySelector('.labels');
@@ -983,6 +1005,14 @@
       document.querySelectorAll('#metric-group button').forEach(function (b) { b.setAttribute('aria-selected', 'false'); });
       btn.setAttribute('aria-selected', 'true');
       usageState.metric = btn.dataset.metric;
+      renderUsage();
+    });
+  });
+  document.querySelectorAll('#ranking-scope-group button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('#ranking-scope-group button').forEach(function (b) { b.setAttribute('aria-selected', 'false'); });
+      btn.setAttribute('aria-selected', 'true');
+      usageState.rankingsScope = btn.dataset.scope;
       renderUsage();
     });
   });
