@@ -92,13 +92,15 @@
 
   /* Tracker: Board */
   .board { display: flex; gap: .8rem; overflow-x: auto; padding-bottom: .4rem; }
-  .col { flex: 0 0 240px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: .7rem; border-top: 3px solid var(--text-faint); }
-  .col-groomed { border-top-color: var(--info); }
-  .col-progress { border-top-color: var(--warning); }
-  .col-review { border-top-color: #8757b0; }
-  .col-blocked { border-top-color: var(--error); }
-  .col-done { border-top-color: var(--success); }
-  .col h2 { font-size: .66rem; text-transform: uppercase; letter-spacing: .05em; color: var(--text-faint); margin: .1rem .1rem .6rem; display: flex; justify-content: space-between; font-weight: 700; }
+  .col { flex: 0 0 240px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: .7rem; }
+  .col h2 { font-size: .66rem; text-transform: uppercase; letter-spacing: .05em; color: var(--text-faint); margin: .1rem .1rem .6rem; display: flex; align-items: center; justify-content: space-between; font-weight: 700; }
+  .col h2 .name { display: flex; align-items: center; gap: .4rem; }
+  .col h2 .name::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--text-faint); flex: 0 0 auto; }
+  .col-groomed h2 .name::before { background: var(--info); }
+  .col-progress h2 .name::before { background: var(--warning); }
+  .col-review h2 .name::before { background: #8757b0; }
+  .col-blocked h2 .name::before { background: var(--error); }
+  .col-done h2 .name::before { background: var(--success); }
   .task-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .55rem .65rem; margin-bottom: .55rem; }
   .task-card .milestone { font-size: .64rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: .04em; margin-bottom: .25rem; }
   .task-card .slug { font-weight: 600; font-size: .8rem; }
@@ -112,8 +114,8 @@
   .rstation.active .node { border-color: var(--primary); color: var(--primary); }
   .rstation .rname { font-weight: 600; font-size: .8rem; }
   .rstation .rcount { color: var(--text-faint); font-size: .7rem; margin-left: .3rem; font-weight: 400; }
-  .icard { border-left: 3px solid var(--primary); background: var(--surface); border: 1px solid var(--border); border-left-width: 3px; border-radius: 6px; padding: .4rem .55rem; margin-top: .5rem; font-size: .76rem; }
-  .icard.is-done { color: var(--text-faint); text-decoration: line-through; border-left-color: var(--success); }
+  .icard { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: .4rem .55rem; margin-top: .5rem; font-size: .76rem; }
+  .icard.is-done { color: var(--text-faint); text-decoration: line-through; }
 
   /* Swarms */
   .swarm-list { display: flex; flex-direction: column; gap: .8rem; margin-top: 1rem; }
@@ -233,23 +235,23 @@
 
   <section class="view" id="view-tracker">
     <div class="board" id="board">
-      <div class="col"><h2>Idea<span>1</span></h2>
+      <div class="col"><h2><span class="name">Idea</span><span>1</span></h2>
         <div class="task-card"><div class="slug">cli-export</div><div class="scope">Export usage as CSV via a new CLI flag</div></div>
       </div>
-      <div class="col col-groomed"><h2>Groomed<span>1</span></h2>
+      <div class="col col-groomed"><h2><span class="name">Groomed</span><span>1</span></h2>
         <div class="task-card"><div class="milestone">v0.19 milestone</div><div class="slug">notes-local-file</div><div class="scope">Per-user gitignored .harness/notes.local.md</div></div>
       </div>
-      <div class="col col-progress"><h2>In Progress<span>2</span></h2>
+      <div class="col col-progress"><h2><span class="name">In Progress</span><span>2</span></h2>
         <div class="task-card"><div class="milestone">v0.19 milestone</div><div class="slug">dashboard-react-redesign</div><div class="scope">Vite+React frontend, Swarms tab</div></div>
         <div class="task-card"><div class="slug">landing-page</div><div class="scope">Marketing page for cairn plugin</div></div>
       </div>
-      <div class="col col-review"><h2>In Review<span>0</span></h2>
+      <div class="col col-review"><h2><span class="name">In Review</span><span>0</span></h2>
         <div class="empty" style="padding:.5rem 0">—</div>
       </div>
-      <div class="col col-blocked"><h2>Blocked<span>1</span></h2>
+      <div class="col col-blocked"><h2><span class="name">Blocked</span><span>1</span></h2>
         <div class="task-card"><div class="slug">impeccable-vendor</div><div class="scope">Waiting on marketplace approval</div></div>
       </div>
-      <div class="col col-done"><h2>Done<span>2</span></h2>
+      <div class="col col-done"><h2><span class="name">Done</span><span>2</span></h2>
         <div class="task-card"><div class="slug">swarms-tab-backend</div><div class="scope">parse_state_md, discover_swarms, /api/swarms</div></div>
         <div class="task-card"><div class="slug">cairn-feedback</div><div class="scope">Sanitized bug feedback flow</div></div>
       </div>
