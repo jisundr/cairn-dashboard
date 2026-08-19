@@ -134,10 +134,15 @@
   .swarm-list-item .row1 { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
   .swarm-list-item .slug { font-weight: 700; font-size: .84rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .swarm-list-item .row2 { display: flex; align-items: center; gap: .5rem; margin-top: .3rem; font-size: .74rem; color: var(--text-dim); }
+  .mini-progress { display: flex; gap: 2px; margin-top: .4rem; }
+  .mini-progress .seg { flex: 1 1 0; height: 4px; border-radius: 2px; background: var(--border); }
+  .mini-progress .seg.filled { background: var(--primary); }
 
   .phase-pill { font-size: .66rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; padding: .16rem .5rem; border-radius: 99px; background: var(--bg); color: var(--text-dim); border: 1px solid var(--border); flex: 0 0 auto; }
   .phase-pill.handoff { background: var(--warning); color: #fff; border-color: transparent; }
   .phase-pill.done { background: var(--success); color: #fff; border-color: transparent; }
+  .phase-pill.stalled { background: var(--error); color: #fff; border-color: transparent; }
+  .phase-pill.running { background: var(--primary); color: #fff; border-color: transparent; }
   .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
   .dot.alive { background: var(--success); }
   .dot.dead { background: var(--error); }
@@ -479,13 +484,35 @@
   function phaseLabel(phase) {
     if (phase === 'HANDOFF NEEDED') return { text: 'Handoff Needed', cls: 'phase-pill handoff' };
     if (phase === 'PUBLISH') return { text: 'Done', cls: 'phase-pill done' };
-    return { text: 'Running', cls: 'phase-pill' };
+    return { text: 'Running', cls: 'phase-pill running' };
   }
 
-  function renderTimeline(phase) {
-    var currentIndex = CHAIN_PHASES.indexOf(phase);
+  // Current phase isn't always in CHAIN_PHASES (HANDOFF NEEDED is a pause state,
+  // not a chain step) — fall back to the most recent chain-phase entry in history.
+  function pipelinePosition(s) {
+    var direct = CHAIN_PHASES.indexOf(s.phase);
+    if (direct !== -1) return direct;
+    for (var i = 0; i < s.recentHistory.length; i++) {
+      var idx = CHAIN_PHASES.indexOf(s.recentHistory[i].phase);
+      if (idx !== -1) return idx;
+    }
+    return -1;
+  }
+
+  function renderMiniProgress(s) {
+    var pos = pipelinePosition(s);
+    return '<div class="mini-progress">' + CHAIN_PHASES.map(function (_, i) {
+      return '<span class="seg' + (pos !== -1 && i <= pos ? ' filled' : '') + '"></span>';
+    }).join('') + '</div>';
+  }
+
+  // Uses the same pipelinePosition() as the list's mini-progress bar, so list
+  // and detail always agree on where a swarm actually sits — including
+  // HANDOFF NEEDED, which isn't itself a chain step (falls back to history).
+  function renderTimeline(s) {
+    var currentIndex = pipelinePosition(s);
     return CHAIN_PHASES.map(function (p, i) {
-      var cls = i === currentIndex ? 'step current' : (currentIndex === -1 || i <= currentIndex ? 'step done' : 'step');
+      var cls = i === currentIndex ? 'step current' : (i <= currentIndex ? 'step done' : 'step');
       var arrow = i < CHAIN_PHASES.length - 1 ? '<span class="arrow">→</span>' : '';
       return '<span class="' + cls + '">' + p + '</span>' + arrow;
     }).join('');
@@ -493,12 +520,13 @@
 
   function renderSwarmList() {
     document.getElementById('swarm-list').innerHTML = SWARMS.map(function (s) {
-      var pill = phaseLabel(s.phase);
+      var pill = isStalled(s.status) ? { text: 'Stalled', cls: 'phase-pill stalled' } : phaseLabel(s.phase);
       var dotCls = s.tmux === 'alive' ? 'dot alive' : (s.tmux === 'dead' ? 'dot dead' : 'dot unknown');
       var selCls = s.slug === selectedSwarm ? ' selected' : '';
       return '<div class="swarm-list-item' + selCls + '" data-slug="' + s.slug + '">' +
         '<div class="row1"><span class="slug">' + s.slug + '</span><span class="' + pill.cls + '">' + pill.text + '</span></div>' +
         '<div class="row2"><span class="' + dotCls + '"></span>tmux ' + s.tmux + '<span>·</span>' + s.lastActivity + '</div>' +
+        renderMiniProgress(s) +
         '</div>';
     }).join('');
     document.querySelectorAll('.swarm-list-item').forEach(function (el) {
@@ -526,7 +554,7 @@
     el.innerHTML = '<div class="detail-card">' +
       '<div class="detail-head"><div class="detail-slug">' + s.slug + '</div>' +
       '<button class="detail-close" id="detail-close-btn" aria-label="Close detail panel">&times;</button></div>' +
-      '<div class="timeline">' + renderTimeline(s.phase) + '</div>' +
+      '<div class="timeline">' + renderTimeline(s) + '</div>' +
       '<div class="detail-meta">' +
       '<span><span class="k">Branch</span><span class="mono">' + s.branch + '</span></span>' +
       '<span><span class="k">Worktree</span><span class="mono">' + s.worktree + '</span></span>' +
