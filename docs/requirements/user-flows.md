@@ -1,7 +1,7 @@
 # User Flows: cairn-dashboard
 
 ## Metadata
-- User Flows Version: v0.9
+- User Flows Version: v0.10
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md
 - Author:
@@ -58,8 +58,6 @@
 - Author clicks a sessions-table column header: table sorts by that column (ascending, or descending on a second click), scoped to the current window's already-fetched rows.
 - Author picks a Model or Version filter above the sessions table: table narrows to matching rows within the current window, no refetch; picking "All" clears that filter.
 - Author clicks Prev/Next below the sessions table: table pages through the current (possibly filtered) row set.
-- Author toggles the chart between Cost and Tokens: bars replot from the same window against the chosen metric, no refetch.
-- Author toggles the chart between Window and All-time: bars replot from either the current period/anchor window or full session history (monthly buckets), independent of the period/anchor toolbar — the ranking panels and stat grid are unaffected either way, they always follow the period/anchor window.
 
 **Error States**
 - `/api/usage` fetch fails (server not running, network blip): UI shows a stale-data indicator on the existing view rather than freezing silently or clearing to blank.
