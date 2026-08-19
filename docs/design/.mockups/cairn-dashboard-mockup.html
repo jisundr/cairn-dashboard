@@ -132,7 +132,7 @@
   }
   .swarm-list-item.selected { border-color: var(--primary); background: var(--bg); }
   .swarm-list-item .row1 { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
-  .swarm-list-item .slug { font-weight: 700; font-size: .84rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .swarm-list-item .slug { font-weight: 700; font-size: .84rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; }
   .swarm-list-item .row2 { display: flex; align-items: center; gap: .5rem; margin-top: .3rem; font-size: .74rem; color: var(--text-dim); }
   .mini-progress { display: flex; gap: 2px; margin-top: .4rem; }
   .mini-progress .seg { flex: 1 1 0; height: 4px; border-radius: 2px; background: var(--border); }
@@ -150,33 +150,43 @@
 
   .detail-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem 1.2rem; }
   .detail-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .9rem; }
-  .detail-slug { font-size: 1rem; font-weight: 700; }
-  .detail-close { background: none; border: none; color: var(--text-faint); font-size: 1.1rem; line-height: 1; cursor: pointer; padding: .2rem .4rem; border-radius: 6px; }
+  .detail-head-left { display: flex; align-items: center; gap: .6rem; min-width: 0; }
+  .detail-slug { font-size: 1rem; font-weight: 700; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .detail-close { background: none; border: none; color: var(--text-faint); font-size: 1.1rem; line-height: 1; cursor: pointer; padding: .2rem .4rem; border-radius: 6px; flex: 0 0 auto; }
   .detail-close:hover { color: var(--text); background: var(--bg); }
 
-  .timeline { display: flex; flex-wrap: wrap; align-items: center; gap: .15rem; margin-bottom: 1rem; font-size: .74rem; }
+  .detail-section { padding: .9rem 0; border-top: 1px solid var(--border); }
+  .detail-section:first-of-type { border-top: none; padding-top: 0; }
+
+  .timeline { display: flex; flex-wrap: wrap; align-items: center; gap: .15rem; font-size: .74rem; }
   .timeline .step { padding: .15rem .5rem; border-radius: 99px; color: var(--text-faint); }
   .timeline .step.done { color: var(--text-dim); }
   .timeline .step.current { color: #fff; background: var(--primary); font-weight: 700; }
+  .timeline .step.paused { color: #fff; background: var(--warning); font-weight: 700; }
   .timeline .arrow { color: var(--border); font-size: .7rem; }
 
-  .detail-meta { display: flex; gap: 1.5rem; flex-wrap: wrap; color: var(--text-dim); font-size: .8rem; margin-bottom: .7rem; }
-  .detail-meta .k { color: var(--text-faint); margin-right: .35rem; }
+  .status-row { display: flex; align-items: baseline; justify-content: space-between; gap: .8rem; }
+  .detail-meta { display: flex; gap: 1.2rem; flex-wrap: wrap; color: var(--text-faint); font-size: .74rem; margin-top: .6rem; }
+  .detail-meta .k { margin-right: .3rem; }
+  .detail-meta .mono { color: var(--text-dim); }
 
-  .badge { display: inline-flex; align-items: center; gap: .3rem; font-size: .74rem; font-weight: 600; padding: .2rem .55rem; border-radius: 99px; margin-bottom: .8rem; }
+  .badge { display: inline-flex; align-items: center; gap: .3rem; font-size: .8rem; font-weight: 600; padding: .25rem .6rem; border-radius: 99px; }
   .badge.stalled { background: var(--error); color: #fff; }
-  .hint { color: var(--text-faint); font-size: .78rem; margin-bottom: .8rem; display: block; }
+  .hint { color: var(--text-dim); font-size: .82rem; }
+  .elapsed { color: var(--text-dim); font-size: .78rem; white-space: nowrap; }
 
-  .detail-subhead { font-size: .68rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; margin: 1rem 0 .5rem; }
+  .detail-subhead { font-size: .68rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; margin: 0 0 .5rem; }
   .history-log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .45rem; }
   .history-log li { display: flex; gap: .6rem; font-size: .8rem; align-items: baseline; }
   .history-log .hphase { font-weight: 600; color: var(--text); flex: 0 0 auto; }
-  .history-log .hnote { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .history-log .hnote { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: default; }
   .history-log .htime { color: var(--text-faint); font-size: .72rem; margin-left: auto; flex: 0 0 auto; }
 
   .pane-tail {
     margin-top: .3rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
     padding: .6rem .7rem; font-size: .74rem; line-height: 1.5; color: var(--text-dim); white-space: pre-wrap;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    max-height: 240px; overflow-y: auto;
   }
 
   .empty { color: var(--text-faint); font-size: .84rem; padding: 2rem 0; text-align: center; }
@@ -511,10 +521,12 @@
   // HANDOFF NEEDED, which isn't itself a chain step (falls back to history).
   function renderTimeline(s) {
     var currentIndex = pipelinePosition(s);
+    var atLabel = s.phase === 'HANDOFF NEEDED' ? 'paused' : 'current';
     return CHAIN_PHASES.map(function (p, i) {
-      var cls = i === currentIndex ? 'step current' : (i <= currentIndex ? 'step done' : 'step');
+      var cls = i === currentIndex ? 'step ' + atLabel : (i <= currentIndex ? 'step done' : 'step');
+      var label = (i === currentIndex && atLabel === 'paused') ? p + ' ⏸' : p;
       var arrow = i < CHAIN_PHASES.length - 1 ? '<span class="arrow">→</span>' : '';
-      return '<span class="' + cls + '">' + p + '</span>' + arrow;
+      return '<span class="' + cls + '">' + label + '</span>' + arrow;
     }).join('');
   }
 
@@ -542,28 +554,44 @@
     var s = SWARMS.filter(function (x) { return x.slug === selectedSwarm; })[0];
     var el = document.getElementById('swarm-detail');
     if (!s) { el.innerHTML = '<div class="detail-empty">Select a swarm to see details.</div>'; return; }
-    var statusBlock = isStalled(s.status)
+
+    var pill = isStalled(s.status) ? { text: 'Stalled', cls: 'phase-pill stalled' } : phaseLabel(s.phase);
+    var statusLine = isStalled(s.status)
       ? '<span class="badge stalled">' + s.status + '</span>'
-      : (s.phase !== 'HANDOFF NEEDED' && s.phase !== 'PUBLISH' ? '<span class="hint">No progress in ' + s.lastActivity.replace(' ago', '') + '</span>' : '');
+      : (s.phase !== 'HANDOFF NEEDED' && s.phase !== 'PUBLISH' ? '<span class="hint">No progress in ' + s.lastActivity.replace(' ago', '') + '</span>' : '<span class="hint">' + (s.phase === 'PUBLISH' ? 'Published' : 'Waiting on a decision') + '</span>');
     var historyHtml = s.recentHistory.map(function (h) {
-      return '<li><span class="hphase">' + h.phase + '</span><span class="hnote">' + h.note + '</span><span class="htime">' + h.time + '</span></li>';
+      return '<li><span class="hphase">' + h.phase + '</span>' +
+        '<span class="hnote" title="' + h.note.replace(/"/g, '&quot;') + '">' + h.note + '</span>' +
+        '<span class="htime" title="' + h.time + '">' + h.time + '</span></li>';
     }).join('');
-    var paneTailHtml = (s.phase === 'HANDOFF NEEDED' && s.paneTail)
-      ? '<div class="detail-subhead">Pane tail</div><div class="pane-tail">' + s.paneTail + '</div>'
+    var historyBlock = '<div class="detail-section">' +
+      '<div class="detail-subhead">Recent history</div>' +
+      '<ul class="history-log">' + historyHtml + '</ul>' +
+      '</div>';
+    var paneTailBlock = (s.phase === 'HANDOFF NEEDED' && s.paneTail)
+      ? '<div class="detail-section"><div class="detail-subhead">Pane tail</div><div class="pane-tail">' + s.paneTail + '</div></div>'
       : '';
+    // HANDOFF NEEDED: pane tail is the densest "what am I being asked to decide"
+    // content, so it leads — no scrolling past history to reach it.
+    var bodyBlocks = s.phase === 'HANDOFF NEEDED' ? (paneTailBlock + historyBlock) : (historyBlock + paneTailBlock);
+
     el.innerHTML = '<div class="detail-card">' +
-      '<div class="detail-head"><div class="detail-slug">' + s.slug + '</div>' +
-      '<button class="detail-close" id="detail-close-btn" aria-label="Close detail panel">&times;</button></div>' +
+      '<div class="detail-head">' +
+      '<div class="detail-head-left"><div class="detail-slug">' + s.slug + '</div><span class="' + pill.cls + '">' + pill.text + '</span></div>' +
+      '<button class="detail-close" id="detail-close-btn" aria-label="Close detail panel">&times;</button>' +
+      '</div>' +
+      '<div class="detail-section">' +
+      '<div class="detail-subhead">Progress</div>' +
       '<div class="timeline">' + renderTimeline(s) + '</div>' +
+      '</div>' +
+      '<div class="detail-section">' +
+      '<div class="status-row">' + statusLine + '<span class="elapsed">' + s.lastActivity + '</span></div>' +
       '<div class="detail-meta">' +
       '<span><span class="k">Branch</span><span class="mono">' + s.branch + '</span></span>' +
       '<span><span class="k">Worktree</span><span class="mono">' + s.worktree + '</span></span>' +
-      '<span><span class="k">Last activity</span>' + s.lastActivity + '</span>' +
       '</div>' +
-      statusBlock +
-      '<div class="detail-subhead">Recent history</div>' +
-      '<ul class="history-log">' + historyHtml + '</ul>' +
-      paneTailHtml +
+      '</div>' +
+      bodyBlocks +
       '</div>';
     document.getElementById('detail-close-btn').addEventListener('click', function () {
       selectedSwarm = null;
