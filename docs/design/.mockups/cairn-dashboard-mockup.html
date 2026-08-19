@@ -137,6 +137,7 @@
 
   .phase-pill { font-size: .66rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; padding: .16rem .5rem; border-radius: 99px; background: var(--bg); color: var(--text-dim); border: 1px solid var(--border); flex: 0 0 auto; }
   .phase-pill.handoff { background: var(--warning); color: #fff; border-color: transparent; }
+  .phase-pill.done { background: var(--success); color: #fff; border-color: transparent; }
   .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
   .dot.alive { background: var(--success); }
   .dot.dead { background: var(--error); }
@@ -445,6 +446,12 @@
 
   function isStalled(status) { return status.indexOf('STALLED (') === 0; }
 
+  function phaseLabel(phase) {
+    if (phase === 'HANDOFF NEEDED') return { text: 'Handoff Needed', cls: 'phase-pill handoff' };
+    if (phase === 'PUBLISH') return { text: 'Done', cls: 'phase-pill done' };
+    return { text: 'Running', cls: 'phase-pill' };
+  }
+
   function renderTimeline(phase) {
     var currentIndex = CHAIN_PHASES.indexOf(phase);
     return CHAIN_PHASES.map(function (p, i) {
@@ -456,12 +463,11 @@
 
   function renderSwarmList() {
     document.getElementById('swarm-list').innerHTML = SWARMS.map(function (s) {
-      var pillCls = s.phase === 'HANDOFF NEEDED' ? 'phase-pill handoff' : 'phase-pill';
-      var pillLabel = s.phase === 'HANDOFF NEEDED' ? 'Handoff Needed' : (s.phase.charAt(0) + s.phase.slice(1).toLowerCase());
+      var pill = phaseLabel(s.phase);
       var dotCls = s.tmux === 'alive' ? 'dot alive' : (s.tmux === 'dead' ? 'dot dead' : 'dot unknown');
       var selCls = s.slug === selectedSwarm ? ' selected' : '';
       return '<div class="swarm-list-item' + selCls + '" data-slug="' + s.slug + '">' +
-        '<div class="row1"><span class="slug">' + s.slug + '</span><span class="' + pillCls + '">' + pillLabel + '</span></div>' +
+        '<div class="row1"><span class="slug">' + s.slug + '</span><span class="' + pill.cls + '">' + pill.text + '</span></div>' +
         '<div class="row2"><span class="' + dotCls + '"></span>tmux ' + s.tmux + '<span>·</span>' + s.lastActivity + '</div>' +
         '</div>';
     }).join('');
