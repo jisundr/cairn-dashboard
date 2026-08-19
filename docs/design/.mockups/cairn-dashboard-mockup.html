@@ -24,6 +24,9 @@
   }
 
   * { box-sizing: border-box; }
+  button:focus-visible, .pane-toggle:focus-visible, [role="tab"]:focus-visible {
+    outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px;
+  }
   html, body { height: 100%; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
@@ -37,7 +40,7 @@
     display: flex; align-items: center; gap: 1.25rem; padding: .85rem 1.5rem;
     border-bottom: 1px solid var(--border); flex-wrap: wrap;
   }
-  h1 { font-size: 1rem; margin: 0; font-weight: 700; letter-spacing: -.01em; }
+  h1 { font-size: 1.25rem; margin: 0; font-weight: 700; letter-spacing: -.01em; }
   h1 span { color: var(--primary); }
   .tabs { display: flex; gap: .2rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .2rem; }
   .tab {
@@ -64,14 +67,14 @@
     background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .85rem 1rem;
   }
   .stat .label { font-size: .68rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .3rem; font-weight: 600; }
-  .stat .value { font-size: 1.35rem; font-weight: 600; }
+  .stat .value { font-size: 1rem; font-weight: 700; }
   .stat .value.accent { color: var(--primary); }
 
   .card {
     background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
     padding: 1rem 1.1rem; margin-bottom: .9rem;
   }
-  .card .head { font-size: .68rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .8rem; font-weight: 600; }
+  .card .head { font-size: 1rem; color: var(--text); letter-spacing: normal; margin-bottom: .8rem; font-weight: 600; }
   .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: .9rem; margin-bottom: .9rem; }
 
   .chart-card svg { width: 100%; height: 140px; overflow: visible; display: block; }
@@ -93,12 +96,12 @@
   /* Tracker: Board */
   .board { display: flex; gap: .8rem; overflow-x: auto; padding-bottom: .4rem; }
   .col { flex: 0 0 240px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: .7rem; }
-  .col h2 { font-size: .66rem; text-transform: uppercase; letter-spacing: .05em; color: var(--text-faint); margin: .1rem .1rem .6rem; display: flex; align-items: center; justify-content: space-between; font-weight: 700; }
+  .col h2 { font-size: 1rem; color: var(--text); margin: .1rem .1rem .6rem; display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
+  .col h2 > span:last-child { font-size: .78rem; color: var(--text-faint); font-weight: 400; }
   .col h2 .name { display: flex; align-items: center; gap: .4rem; }
   .col h2 .name::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--text-faint); flex: 0 0 auto; }
   .col-groomed h2 .name::before { background: var(--info); }
   .col-progress h2 .name::before { background: var(--warning); }
-  .col-review h2 .name::before { background: #8757b0; }
   .col-blocked h2 .name::before { background: var(--error); }
   .col-done h2 .name::before { background: var(--success); }
   .task-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .55rem .65rem; margin-bottom: .55rem; }
@@ -349,15 +352,35 @@ Awaiting: human decision on scope ambiguity</div>
     labelsG.appendChild(text);
   });
 
+  function setTab(view, sub, pushHash) {
+    document.querySelectorAll('.tab').forEach(function (t) { t.setAttribute('aria-selected', t.dataset.view === view ? 'true' : 'false'); });
+    document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('active'); });
+    document.getElementById('view-' + view).classList.add('active');
+    document.getElementById('toolbar-usage').style.display = view === 'usage' ? 'flex' : 'none';
+    document.getElementById('toolbar-tracker').style.display = view === 'tracker' ? 'flex' : 'none';
+    if (view === 'tracker') {
+      var isBoard = sub !== 'road';
+      document.querySelectorAll('#toolbar-tracker .segmented button').forEach(function (b) { b.setAttribute('aria-selected', (b.dataset.sub === 'board') === isBoard ? 'true' : 'false'); });
+      document.getElementById('board').style.display = isBoard ? 'flex' : 'none';
+      document.getElementById('road').style.display = isBoard ? 'none' : 'flex';
+    }
+    if (pushHash) location.hash = (view === 'tracker' && sub === 'road') ? 'tracker/road' : view;
+  }
+
+  function tabFromHash() {
+    var parts = location.hash.replace('#', '').split('/');
+    var view = (parts[0] === 'tracker' || parts[0] === 'swarms') ? parts[0] : 'usage';
+    return [view, parts[1]];
+  }
+
   document.querySelectorAll('.tab').forEach(function (tab) {
     tab.addEventListener('click', function () {
-      document.querySelectorAll('.tab').forEach(function (t) { t.setAttribute('aria-selected', t === tab ? 'true' : 'false'); });
-      document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('active'); });
-      document.getElementById('view-' + tab.dataset.view).classList.add('active');
-      document.getElementById('toolbar-usage').style.display = tab.dataset.view === 'usage' ? 'flex' : 'none';
-      document.getElementById('toolbar-tracker').style.display = tab.dataset.view === 'tracker' ? 'flex' : 'none';
+      var sub = document.querySelector('#toolbar-tracker .segmented button[aria-selected="true"]');
+      setTab(tab.dataset.view, sub && sub.dataset.sub, true);
     });
   });
+
+  window.addEventListener('hashchange', function () { setTab.apply(null, tabFromHash().concat([false])); });
 
   document.querySelectorAll('#toolbar-usage .segmented button').forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -367,14 +390,10 @@ Awaiting: human decision on scope ambiguity</div>
   });
 
   document.querySelectorAll('#toolbar-tracker .segmented button').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      document.querySelectorAll('#toolbar-tracker .segmented button').forEach(function (b) { b.setAttribute('aria-selected','false'); });
-      btn.setAttribute('aria-selected','true');
-      var isBoard = btn.dataset.sub === 'board';
-      document.getElementById('board').style.display = isBoard ? 'flex' : 'none';
-      document.getElementById('road').style.display = isBoard ? 'none' : 'flex';
-    });
+    btn.addEventListener('click', function () { setTab('tracker', btn.dataset.sub, true); });
   });
+
+  setTab.apply(null, tabFromHash().concat([false]));
 </script>
 </body>
 </html>
