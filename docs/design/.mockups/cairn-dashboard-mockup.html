@@ -98,6 +98,8 @@
   .card .head { font-size: 1rem; color: var(--text); letter-spacing: normal; margin-bottom: .8rem; font-weight: 600; }
   .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: .9rem; margin-bottom: .9rem; }
 
+  .chart-card .head-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: .8rem; flex-wrap: wrap; gap: .5rem; }
+  .chart-card .head-row .head { margin-bottom: 0; }
   .chart-card svg { width: 100%; height: 140px; overflow: visible; display: block; }
   .chart-card .bar { fill: var(--primary); opacity: .85; }
   .chart-card .axis { font-size: 9px; fill: var(--text-faint); }
@@ -369,7 +371,13 @@
       <div class="stat"><div class="label">Cache hit</div><div class="value tabular" id="stat-cachehit">0%</div></div>
     </div>
     <div class="card chart-card">
-      <div class="head">Cost over time</div>
+      <div class="head-row">
+        <div class="head">Usage over time</div>
+        <div class="segmented" role="group" aria-label="Chart metric" id="metric-group">
+          <button aria-selected="true" data-metric="cost">Cost</button>
+          <button aria-selected="false" data-metric="tokens">Tokens</button>
+        </div>
+      </div>
       <svg viewBox="0 0 700 150" preserveAspectRatio="none" id="usage-chart">
         <g class="bars"></g>
         <g class="labels"></g>
@@ -835,7 +843,7 @@
     renderSessionsTable(lastWindowSessions, usageState.tz);
   });
 
-  var usageState = { period: 'daily', anchor: NOW, tz: 'local' };
+  var usageState = { period: 'daily', anchor: NOW, tz: 'local', metric: 'cost' };
 
   function renderUsage() {
     var period = usageState.period, tz = usageState.tz;
@@ -863,7 +871,8 @@
       Object.keys(s.subagents).forEach(function (k) { bySubagent[k] = (bySubagent[k] || 0) + s.subagents[k]; });
       Object.keys(s.skills).forEach(function (k) { bySkill[k] = (bySkill[k] || 0) + s.skills[k]; });
       var key = bucketKey(s.ts, win.granularity, tz);
-      byBucket[key] = (byBucket[key] || 0) + cost;
+      var metricValue = usageState.metric === 'tokens' ? totalSessionTokens(s) : cost;
+      byBucket[key] = (byBucket[key] || 0) + metricValue;
     });
     var totalTokens = totalIn + totalOut + totalCacheR + totalCacheC;
     var cacheHit = (totalCacheR + totalIn) > 0 ? (totalCacheR / (totalCacheR + totalIn) * 100) : 0;
@@ -898,7 +907,7 @@
         rect.setAttribute('width', barW); rect.setAttribute('height', Math.max(1, barH));
         rect.setAttribute('rx', 3);
         var title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-        title.textContent = b + ': ' + usd(bucketCost);
+        title.textContent = b + ': ' + (usageState.metric === 'tokens' ? fmt(bucketCost) + ' tokens' : usd(bucketCost));
         rect.appendChild(title);
         barsG.appendChild(rect);
         var labelEvery = Math.max(1, Math.ceil(buckets.length / 8));
@@ -968,6 +977,15 @@
   // "Local" alone doesn't say which timezone that is — label it with the
   // browser's resolved IANA zone so it's unambiguous at a glance.
   document.getElementById('tz-local-btn').textContent = 'Local (' + Intl.DateTimeFormat().resolvedOptions().timeZone + ')';
+
+  document.querySelectorAll('#metric-group button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('#metric-group button').forEach(function (b) { b.setAttribute('aria-selected', 'false'); });
+      btn.setAttribute('aria-selected', 'true');
+      usageState.metric = btn.dataset.metric;
+      renderUsage();
+    });
+  });
   document.getElementById('anchor-prev').addEventListener('click', function () {
     usageState.anchor = shiftAnchor(usageState.period, usageState.anchor, -1, usageState.tz);
     renderUsage();
