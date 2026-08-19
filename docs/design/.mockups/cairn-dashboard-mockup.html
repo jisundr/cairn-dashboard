@@ -124,8 +124,31 @@
   table { border-collapse: collapse; width: 100%; }
   th, td { text-align: left; padding: .5rem .55rem; border-bottom: 1px solid var(--border); }
   th { font-size: .66rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+  th.num { text-align: right; }
   td.num { text-align: right; }
   .table-wrap { overflow-x: auto; }
+  th button {
+    all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: .2rem;
+    font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit;
+  }
+  th button:hover { color: var(--text-dim); }
+  th button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 3px; }
+
+  .filter-row { display: flex; gap: 1.1rem; flex-wrap: wrap; margin-bottom: .8rem; }
+  .filter-field { display: flex; align-items: center; gap: .4rem; }
+  .filter-field label { font-size: .74rem; color: var(--text-faint); }
+  .filter-field select {
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    border-radius: 6px; padding: .28rem .5rem; font-size: .78rem; cursor: pointer;
+  }
+
+  .pagination { display: flex; align-items: center; gap: .8rem; margin-top: .8rem; font-size: .76rem; color: var(--text-dim); }
+  .pagination button {
+    border: 1px solid var(--border); background: var(--surface); border-radius: 6px;
+    padding: .3rem .65rem; cursor: pointer; color: var(--text-dim); font-size: .76rem;
+  }
+  .pagination button:disabled { opacity: .35; cursor: default; }
+  .pagination button:not(:disabled):hover { color: var(--text); }
 
   /* Tracker: Board */
   .board { display: flex; gap: .8rem; overflow-x: auto; padding-bottom: .4rem; align-items: flex-start; min-height: calc(100vh - 140px); }
@@ -357,11 +380,27 @@
     </div>
     <div class="card">
       <div class="head">Sessions</div>
+      <div class="filter-row">
+        <div class="filter-field">
+          <label for="filter-model">Model</label>
+          <select id="filter-model"><option value="all">All</option></select>
+        </div>
+        <div class="filter-field">
+          <label for="filter-version">Version</label>
+          <select id="filter-version"><option value="all">All</option></select>
+        </div>
+      </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Session</th><th>Started</th><th class="num">Calls</th><th class="num">Cost</th><th>Version</th></tr></thead>
+          <thead><tr id="sessions-head"></tr></thead>
           <tbody id="sessions-body"></tbody>
         </table>
+      </div>
+      <div class="empty" id="sessions-empty" style="display:none"></div>
+      <div class="pagination" id="sessions-pagination" style="display:none">
+        <button id="sessions-prev">&#8249; Prev</button>
+        <span class="tabular" id="sessions-page-info"></span>
+        <button id="sessions-next">Next &#8250;</button>
       </div>
     </div>
   </section>
@@ -655,6 +694,132 @@
     }).join('');
   }
 
+  // Sessions table: sortable (click a header, click again to reverse),
+  // filterable by model/version (scoped to the current period window), and
+  // paginated — adapted from maestro's generic renderTable(). Sort/filter
+  // selections persist across a period/anchor/tz switch (renderUsage() calls
+  // this again with the new windowed sessions); page resets to 0 whenever
+  // the toolbar itself resets it, since the underlying row set changed.
+  var PAGE_SIZE = 5;
+  var SESSION_COLUMNS = [
+    ['id', 'Session'], ['ts', 'Started'], ['models', 'Model(s)'],
+    ['tokens', 'Tokens'], ['calls', 'Calls'], ['cost', 'Cost'], ['version', 'Version']
+  ];
+  var sessionsTableState = { sortKey: 'ts', sortDir: -1, filterModel: 'all', filterVersion: 'all', page: 0 };
+  var lastWindowSessions = [];
+
+  function sessionSortValue(s, key) {
+    if (key === 'id') return s.id;
+    if (key === 'ts') return s.ts;
+    if (key === 'models') return s.models.map(function (m) { return m.model; }).join(',');
+    if (key === 'tokens') return totalSessionTokens(s);
+    if (key === 'calls') return s.calls;
+    if (key === 'cost') return sessionCost(s);
+    return s.version;
+  }
+
+  function renderSessionsTable(sessions, tz) {
+    var st = sessionsTableState;
+    var models = Array.from(new Set(sessions.reduce(function (acc, s) { return acc.concat(s.models.map(function (m) { return m.model; })); }, []))).sort();
+    var versions = Array.from(new Set(sessions.map(function (s) { return s.version; }))).sort();
+
+    var modelSelect = document.getElementById('filter-model');
+    var versionSelect = document.getElementById('filter-version');
+    modelSelect.innerHTML = '<option value="all">All</option>' + models.map(function (m) {
+      return '<option value="' + m + '">' + m + '</option>';
+    }).join('');
+    versionSelect.innerHTML = '<option value="all">All</option>' + versions.map(function (v) {
+      return '<option value="' + v + '">' + v + '</option>';
+    }).join('');
+    modelSelect.value = models.indexOf(st.filterModel) === -1 ? 'all' : st.filterModel;
+    versionSelect.value = versions.indexOf(st.filterVersion) === -1 ? 'all' : st.filterVersion;
+    if (modelSelect.value === 'all') st.filterModel = 'all';
+    if (versionSelect.value === 'all') st.filterVersion = 'all';
+
+    var filtered = sessions.filter(function (s) {
+      var modelOk = st.filterModel === 'all' || s.models.some(function (m) { return m.model === st.filterModel; });
+      var versionOk = st.filterVersion === 'all' || s.version === st.filterVersion;
+      return modelOk && versionOk;
+    });
+
+    var sorted = filtered.slice().sort(function (a, b) {
+      var av = sessionSortValue(a, st.sortKey), bv = sessionSortValue(b, st.sortKey);
+      if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * st.sortDir;
+      return String(av).localeCompare(String(bv)) * st.sortDir;
+    });
+
+    var head = document.getElementById('sessions-head');
+    head.innerHTML = SESSION_COLUMNS.map(function (col) {
+      var key = col[0], label = col[1];
+      var arrow = st.sortKey === key ? (st.sortDir === 1 ? ' ▲' : ' ▼') : '';
+      var numClass = (key === 'tokens' || key === 'calls' || key === 'cost') ? ' class="num"' : '';
+      return '<th' + numClass + '><button type="button" data-key="' + key + '">' + label + arrow + '</button></th>';
+    }).join('');
+    head.querySelectorAll('button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var key = btn.dataset.key;
+        if (st.sortKey === key) st.sortDir = -st.sortDir; else { st.sortKey = key; st.sortDir = 1; }
+        st.page = 0;
+        renderSessionsTable(lastWindowSessions, tz);
+      });
+    });
+
+    var body = document.getElementById('sessions-body');
+    var emptyMsg = document.getElementById('sessions-empty');
+    var pag = document.getElementById('sessions-pagination');
+    if (!sorted.length) {
+      body.innerHTML = '';
+      emptyMsg.textContent = sessions.length ? 'No sessions match this filter.' : 'No sessions in this window.';
+      emptyMsg.style.display = 'block';
+      pag.style.display = 'none';
+      return;
+    }
+    emptyMsg.style.display = 'none';
+
+    var totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+    if (st.page >= totalPages) st.page = totalPages - 1;
+    var pageRows = sorted.slice(st.page * PAGE_SIZE, st.page * PAGE_SIZE + PAGE_SIZE);
+
+    body.innerHTML = pageRows.map(function (s) {
+      var started = new Date(s.ts).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: tz === 'utc' ? 'UTC' : undefined });
+      var modelsStr = s.models.map(function (m) { return m.model; }).join(', ');
+      var tokens = totalSessionTokens(s);
+      var title = 'Input: ' + fmt(s.input) + ' · Output: ' + fmt(s.output) + ' · Cache write: ' + fmt(s.cacheCreate) + ' · Cache read: ' + fmt(s.cacheRead);
+      return '<tr><td class="mono">' + s.id + '</td><td>' + started + '</td><td>' + modelsStr + '</td>' +
+        '<td class="num tabular" title="' + title + '">' + fmt(tokens) + '</td>' +
+        '<td class="num tabular">' + fmt(s.calls) + '</td><td class="num tabular">' + usd(sessionCost(s)) + '</td>' +
+        '<td>' + s.version + '</td></tr>';
+    }).join('');
+
+    if (sorted.length > PAGE_SIZE) {
+      pag.style.display = 'flex';
+      document.getElementById('sessions-page-info').textContent = 'Page ' + (st.page + 1) + ' of ' + totalPages + ' (' + sorted.length + ' rows)';
+      document.getElementById('sessions-prev').disabled = st.page === 0;
+      document.getElementById('sessions-next').disabled = st.page >= totalPages - 1;
+    } else {
+      pag.style.display = 'none';
+    }
+  }
+
+  document.getElementById('filter-model').addEventListener('change', function (e) {
+    sessionsTableState.filterModel = e.target.value;
+    sessionsTableState.page = 0;
+    renderSessionsTable(lastWindowSessions, usageState.tz);
+  });
+  document.getElementById('filter-version').addEventListener('change', function (e) {
+    sessionsTableState.filterVersion = e.target.value;
+    sessionsTableState.page = 0;
+    renderSessionsTable(lastWindowSessions, usageState.tz);
+  });
+  document.getElementById('sessions-prev').addEventListener('click', function () {
+    sessionsTableState.page -= 1;
+    renderSessionsTable(lastWindowSessions, usageState.tz);
+  });
+  document.getElementById('sessions-next').addEventListener('click', function () {
+    sessionsTableState.page += 1;
+    renderSessionsTable(lastWindowSessions, usageState.tz);
+  });
+
   var usageState = { period: 'weekly', anchor: NOW, tz: 'utc' };
 
   function renderUsage() {
@@ -733,13 +898,8 @@
       });
     }
 
-    var sorted = sessions.slice().sort(function (a, b) { return b.ts.localeCompare(a.ts); });
-    document.getElementById('sessions-body').innerHTML = sorted.length ? sorted.map(function (s) {
-      var started = new Date(s.ts).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: tz === 'utc' ? 'UTC' : undefined });
-      return '<tr><td class="mono">' + s.id + '</td><td>' + started + '</td>' +
-        '<td class="num tabular">' + fmt(s.calls) + '</td><td class="num tabular">' + usd(sessionCost(s)) + '</td>' +
-        '<td>' + s.version + '</td></tr>';
-    }).join('') : '<tr><td colspan="5" class="empty">No sessions in this window.</td></tr>';
+    lastWindowSessions = sessions;
+    renderSessionsTable(sessions, tz);
   }
 
   function setTab(view, sub, pushHash) {
