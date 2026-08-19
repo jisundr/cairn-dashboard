@@ -54,7 +54,7 @@
 - Author clicks "Latest": anchor jumps back to today.
 - Author toggles UTC/Local: bucket boundaries and all displayed timestamps shift accordingly, independent of the period/anchor.
 - Period is Daily: chart shows 24 hourly buckets for the anchored day instead of a single bar.
-- Author hovers a cell in the contribution heatmap (always full history, unaffected by the period/anchor filter): a tooltip shows that day's date, tokens, and cost.
+- Author hovers a cell in the usage heatmap (always full history, unaffected by the period/anchor filter): a tooltip shows that day's date, tokens, and cost.
 
 **Error States**
 - `/api/usage` fetch fails (server not running, network blip): UI shows a stale-data indicator on the existing view rather than freezing silently or clearing to blank.

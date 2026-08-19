@@ -30,7 +30,7 @@ cairn-dashboard is a local, single-user web dashboard giving real-time visibilit
 | FR-006 | Existing `--task-report`/`--window-report` CLI report entry points (used by `task-orchestrator`) keep working unchanged | Must |
 | FR-007 | Usage tab supports calendar-period filtering (Daily / Weekly / Monthly / Yearly / YTD) with an anchor date and prev/next/Latest navigation to page through history, plus an independent UTC/Local timezone toggle — recomputed client-side against the already-fetched session list, no refetch | Must |
 | FR-008 | Daily period shows an hour-by-hour (24-bucket) chart for the anchored day, not a single bar | Must |
-| FR-009 | Usage tab shows a GitHub-style contribution heatmap (calendar grid, one cell per day, colored by token-volume intensity) covering full session history — independent of the period/anchor filter, but re-bucketed on UTC/Local toggle | Should |
+| FR-009 | Usage tab shows a GitHub-style usage heatmap (calendar grid, one cell per day, colored by token-volume intensity) covering full session history — independent of the period/anchor filter, but re-bucketed on UTC/Local toggle | Should |
 
 ## Non-Functional Requirements
 | ID | Category | Requirement |

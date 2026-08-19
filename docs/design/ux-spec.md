@@ -53,7 +53,7 @@ flowchart TD
     RangeSwitch --> Recompute["Recompute client-side,\ncalendar-aligned, no refetch"]
     Recompute --> Render
     Fetch --> HasHistory{"Any sessions\nin full history?"}
-    HasHistory -->|Yes| Heatmap["Render full-history\ncontribution heatmap"]
+    HasHistory -->|Yes| Heatmap["Render full-history\nusage heatmap"]
     HasHistory -->|No| EmptyHeatmap["Show heatmap empty state"]
     Heatmap --> TzToggle["Author toggles UTC/Local"]
     TzToggle --> Heatmap
@@ -123,7 +123,7 @@ Direct navigation via URL hash (`#usage`, `#tracker`, `#tracker/road`, `#swarms`
 |-----------------|------|------------|
 | Entire screen | Cairn author | Always visible |
 | Prev/next navigation | Cairn author | Hidden for YTD; disabled at the earliest-session/today boundary otherwise |
-| Contribution heatmap | Cairn author | Always visible once any session exists; empty-state message when there is no session history at all |
+| Usage heatmap | Cairn author | Always visible once any session exists; empty-state message when there is no session history at all |
 
 **States:**
 - **Loading:** "Loading…" text shown only on the very first fetch, before any data has ever rendered.

@@ -31,11 +31,12 @@
 Top Nav (REG-1)
 Screen Toolbar (REG-2): period buttons + anchor nav (prev/next/Latest) + UTC/Local toggle + info icon
 Main Content Area (REG-3)
+  └ Usage heatmap (full history, Sunday-start weeks, month labels; static —
+                    shown first because it does not respond to REG-2's
+                    period/anchor filter, only re-buckets on tz toggle)
   └ Stat Grid (cost, tokens, calls, sessions, cache-hit)
   └ Cost-over-time chart (24 hourly buckets for Daily; daily buckets for
                            Weekly/Monthly/YTD; monthly buckets for Yearly)
-  └ Contribution heatmap (full history, Sunday-start weeks, month labels;
-                           independent of period/anchor, re-buckets on tz toggle)
   └ Ranking lists (by-model, by-version, by-subagent, by-skill)
   └ Sessions table
 ```
@@ -50,13 +51,13 @@ Usage Screen
  │    ├── TimezoneToggle (UTC, Local)
  │    └── InfoIcon
  └── MainContent
-      ├── StatGrid
-      │    └── StatTile × 5
-      ├── CostChart
-      ├── ContributionHeatmap
+      ├── UsageHeatmap
       │    ├── MonthLabelRow
       │    └── WeekColumn × N
       │         └── DayCell × 7 (empty-padding cells at the grid's edges)
+      ├── StatGrid
+      │    └── StatTile × 5
+      ├── CostChart
       ├── RankingSection × 4 (by-model, by-version, by-subagent, by-skill)
       │    └── RankRow × N
       └── SessionsTable
@@ -165,7 +166,7 @@ Swarms Screen
 |--------|--------|-----------|-------|
 | Usage | REG-1 | TopNav | Shared across all screens |
 | Usage | REG-2 | PeriodToolbar | 5 period buttons + anchor nav + UTC/Local toggle + info icon |
-| Usage | REG-3 | StatGrid, CostChart, ContributionHeatmap, RankingSection ×4, SessionsTable | Heatmap always shows full history, independent of REG-2's period/anchor |
+| Usage | REG-3 | StatGrid, CostChart, UsageHeatmap, RankingSection ×4, SessionsTable | Heatmap always shows full history, independent of REG-2's period/anchor |
 | Tracker | REG-1 | TopNav | Shared |
 | Tracker | REG-2 | SubViewToolbar | Board/Roadmap toggle |
 | Tracker | REG-3 | BoardView or RoadmapView | Mutually exclusive, one active at a time |

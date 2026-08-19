@@ -31,7 +31,7 @@ As a cairn author, I want to see my Claude Code token usage and cost at a glance
 - [ ] Author can toggle displayed times between UTC and Local; this shifts hour/day/month bucket boundaries and all displayed timestamps, independent of the period/anchor selection.
 - [ ] The view updates within 4 seconds of new usage occurring (poll interval).
 - [ ] A note is shown when one or more calls used a model with no pricing entry, distinct from the cost total.
-- [ ] A GitHub-style contribution heatmap renders below the chart: one cell per day, calendar-year-aligned (Sunday-start weeks, Jan 1 of the earliest activity year through today), colored across 5 intensity levels by that day's token volume relative to the busiest day in the whole session history.
+- [ ] A GitHub-style usage heatmap renders below the chart: one cell per day, calendar-year-aligned (Sunday-start weeks, Jan 1 of the earliest activity year through today), colored across 5 intensity levels by that day's token volume relative to the busiest day in the whole session history.
 - [ ] The heatmap always covers full session history — it does not filter with the period/anchor selector — but its day boundaries shift with the UTC/Local toggle, same as the chart.
 - [ ] Hovering a heatmap cell shows that day's date, token count, and cost.
 
