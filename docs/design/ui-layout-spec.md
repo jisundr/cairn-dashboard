@@ -1,7 +1,7 @@
 # UI Layout Specification: cairn-dashboard
 
 ## Metadata
-- UI Layout Specification Version: v0.10
+- UI Layout Specification Version: v0.11
 - Last Updated: 2026-08-19
 - Derived From: docs/design/ux-spec.md
 - Author:
@@ -15,7 +15,7 @@
 | Region ID | Region Name | Scope | Description |
 |-----------|-------------|-------|-------------|
 | REG-1 | Top Nav | Global | Tab bar (Usage / Tracker / Swarms), always visible, present on every screen |
-| REG-2 | Screen Toolbar | Per-screen | Secondary controls specific to the active screen — Usage's date-range buttons, Tracker's Board/Roadmap sub-tabs, Swarms' sort-order control. |
+| REG-2 | Screen Toolbar | Per-screen | Secondary controls specific to the active screen — Usage's period/anchor/timezone controls, Tracker's Board/Roadmap sub-tabs, Swarms' sort-order control. |
 | REG-3 | Main Content Area | Per-screen | The screen's primary content, fills remaining vertical space below REG-1/REG-2 |
 | REG-4 | Detail Pane | Swarms only | Right-hand panel within Swarms' Main Content Area, showing the selected swarm's full detail; empty-state prompt when nothing is selected |
 
@@ -54,8 +54,9 @@ Usage Screen
  └── MainContent
       ├── UsageHeatmap
       │    ├── MonthLabelRow
-      │    └── WeekColumn × N
-      │         └── DayCell × 7 (empty-padding cells at the grid's edges)
+      │    ├── WeekColumn × N
+      │    │    └── DayCell × 7 (empty-padding cells at the grid's edges)
+      │    └── HeatmapLegend (Less → More, 5-level swatch key)
       ├── StatGrid
       │    └── StatTile × 5
       ├── RankingSection × 4 (by-model, by-version, by-subagent, by-skill)
@@ -169,7 +170,7 @@ Swarms Screen
 |--------|--------|-----------|-------|
 | Usage | REG-1 | TopNav | Shared across all screens |
 | Usage | REG-2 | PeriodToolbar | 5 period buttons + anchor nav + UTC/Local toggle + info icon |
-| Usage | REG-3 | StatGrid, CostChart, UsageHeatmap, RankingSection ×4, SessionsTable | Heatmap always shows full history, independent of REG-2's period/anchor. CostChart and RankingSection always match REG-2's window (no independent scope/metric controls). SessionsTable adds its own Model/Version filter, sortable headers, and pagination on top of REG-2's period window. |
+| Usage | REG-3 | UsageHeatmap, StatGrid, RankingSection ×4, CostChart, SessionsTable | Heatmap always shows full history, independent of REG-2's period/anchor. CostChart and RankingSection always match REG-2's window (no independent scope/metric controls). SessionsTable adds its own Model/Version filter, sortable headers, and pagination on top of REG-2's period window. |
 | Tracker | REG-1 | TopNav | Shared |
 | Tracker | REG-2 | SubViewToolbar | Board/Roadmap toggle |
 | Tracker | REG-3 | BoardView or RoadmapView | Mutually exclusive, one active at a time |

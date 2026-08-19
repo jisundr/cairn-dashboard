@@ -1,7 +1,7 @@
 # UX Specification: cairn-dashboard
 
 ## Metadata
-- UX Specification Version: v0.12
+- UX Specification Version: v0.13
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md, docs/requirements/user-flows.md
 - Author:
@@ -57,6 +57,9 @@ flowchart TD
     HasHistory -->|No| EmptyHeatmap["Show heatmap empty state"]
     Heatmap --> TzToggle["Author toggles UTC/Local"]
     TzToggle --> Heatmap
+    Render --> TableInteract["Author sorts a column,\npicks a Model/Version filter,\nor pages Prev/Next"]
+    TableInteract --> RecomputeTable["Recompute sessions table\nclient-side, no refetch"]
+    RecomputeTable --> Render
     Render --> Poll4s["4s poll tick"]
     Poll4s -->|Success| Render
     Poll4s -->|Fetch fails| Stale["Show stale-data indicator\non existing view"]
@@ -92,7 +95,10 @@ flowchart TD
 | Any screen | Click "Swarms" tab | Swarms screen | Always available |
 | Tracker screen | Click "Board" sub-tab | Tracker screen, Board view | Always available |
 | Tracker screen | Click "Roadmap" sub-tab | Tracker screen, Roadmap view | Always available |
-| Usage screen | Click a date-range button | Usage screen, recomputed | Always available |
+| Usage screen | Select a period, navigate anchor, or toggle timezone | Usage screen, stat grid/rankings/chart recomputed | Always available |
+| Usage screen | Click a sessions-table column header | Usage screen, sessions table re-sorts | Always available |
+| Usage screen | Pick a Model/Version filter above the sessions table | Usage screen, sessions table narrows to matching rows | Always available |
+| Usage screen | Click sessions-table Prev/Next | Usage screen, sessions table pages | Only when the row set exceeds one page |
 | Swarms screen | Click a swarm in the left list | Swarms screen, detail panel opens/swaps on the right | Always available |
 | Swarms screen | Click the detail panel's close control | Swarms screen, detail panel returns to empty state | Only when a swarm is selected |
 | Swarms screen | Click a sort-order button | Swarms screen, list reorders | Always available |

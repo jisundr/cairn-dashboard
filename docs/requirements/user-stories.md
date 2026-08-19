@@ -1,7 +1,7 @@
 # User Stories: cairn-dashboard
 
 ## Metadata
-- User Stories Version: v0.11
+- User Stories Version: v0.12
 - Last Updated: 2026-08-19
 - Derived From: docs/requirements/prd.md
 - Author:
@@ -21,17 +21,17 @@ As a cairn author, I want to see my Claude Code token usage and cost at a glance
 **Acceptance Criteria**
 - [ ] Usage tab shows total cost, tokens, calls, sessions, and cache-hit rate for the selected period window.
 - [ ] A cost-over-time chart renders for the selected window, zero-filled to every bucket in the window (hour/day/month depending on period), not just buckets with an actual session.
-- [ ] By-model, by-version, by-subagent, and by-skill ranking lists each render, sorted descending by their respective metric.
+- [ ] By-model and by-version ranking lists render sorted descending by cost; by-subagent and by-skill ranking lists render sorted descending by invocation count.
 - [ ] A sessions table lists individual sessions with their own cost/token/call figures.
-- [ ] Author can switch the period type (Daily / Weekly / Monthly / Yearly / YTD); stats, chart, and rankings recompute against the already-fetched session list — no refetch.
+- [ ] Author can switch the period type (Daily / Weekly / Monthly / Yearly / YTD); stats, chart, and rankings recompute against the already-fetched session list — no refetch. Defaults to Daily.
 - [ ] Daily/Weekly/Monthly/Yearly periods carry an anchor date with prev/next navigation to page through history, plus a "Latest" control that jumps the anchor back to today. YTD has no anchor (always the current year to date).
 - [ ] Daily period's chart shows 24 hourly buckets for the anchored day, not one single-day bar.
 - [ ] Weekly/Monthly/Yearly periods are calendar-aligned to the anchor (e.g. Monthly = the 1st through the last day of the anchor's month), not a trailing N-day window.
 - [ ] Yearly period's chart uses monthly buckets (12), not daily — a full year of daily points would be too dense to read.
-- [ ] Author can toggle displayed times between UTC and Local; this shifts hour/day/month bucket boundaries and all displayed timestamps, independent of the period/anchor selection.
+- [ ] Author can toggle displayed times between UTC and Local; this shifts hour/day/month bucket boundaries and all displayed timestamps, independent of the period/anchor selection. Defaults to Local.
 - [ ] The view updates within 4 seconds of new usage occurring (poll interval).
 - [ ] A note is shown when one or more calls used a model with no pricing entry, distinct from the cost total.
-- [ ] A GitHub-style usage heatmap renders below the chart: one cell per day, calendar-year-aligned (Sunday-start weeks, Jan 1 of the earliest activity year through today), colored across 5 intensity levels by that day's token volume relative to the busiest day in the whole session history.
+- [ ] A GitHub-style usage heatmap renders first, above the period-filtered sections (stat grid, rankings, chart, sessions table): one cell per day, calendar-year-aligned (Sunday-start weeks, Jan 1 of the earliest activity year through the latest recorded session day), colored across 5 intensity levels by that day's token volume relative to the busiest day in the whole session history.
 - [ ] The heatmap always covers full session history — it does not filter with the period/anchor selector — but its day boundaries shift with the UTC/Local toggle, same as the chart.
 - [ ] Hovering a heatmap cell shows that day's date, token count, and cost.
 - [ ] Sessions table shows Model(s) and Tokens columns in addition to Session/Started/Calls/Cost/Version; Tokens shows the total, with an input/output/cache-write/cache-read breakdown on hover.
@@ -53,7 +53,7 @@ As a cairn author, I want to see my Claude Code token usage and cost at a glance
 
 ## US-002 — View task tracker state
 
-**Traces to:** FR-002
+**Traces to:** FR-002, FR-004
 
 **User Story**
 As a cairn author, I want to see my task tracker's Board and Roadmap views, so that I know what's in progress without opening `TRACKER.md` directly.
@@ -71,7 +71,7 @@ As a cairn author, I want to see my task tracker's Board and Roadmap views, so t
 
 ## US-003 — Monitor running swarms
 
-**Traces to:** FR-003
+**Traces to:** FR-003, FR-004
 
 **User Story**
 As a cairn author, I want to see my running Unattended coding-chain swarms in a list + detail view, so that I know their full status without manually checking `tmux` or `STATE.md`, and without leaving the screen to see the detail.
