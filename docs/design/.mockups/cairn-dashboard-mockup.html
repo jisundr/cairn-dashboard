@@ -233,6 +233,13 @@
     <button aria-selected="false" data-sub="road">Roadmap</button>
   </div>
 </div>
+<div class="toolbar" id="toolbar-swarms" style="display:none">
+  <div class="segmented" role="group" aria-label="Sort order">
+    <button aria-selected="true" data-sort="priority">Priority</button>
+    <button aria-selected="false" data-sort="recent">Recent activity</button>
+    <button aria-selected="false" data-sort="name">Name</button>
+  </div>
+</div>
 
 <main>
   <section class="view active" id="view-usage">
@@ -370,6 +377,7 @@
     document.getElementById('view-' + view).classList.add('active');
     document.getElementById('toolbar-usage').style.display = view === 'usage' ? 'flex' : 'none';
     document.getElementById('toolbar-tracker').style.display = view === 'tracker' ? 'flex' : 'none';
+    document.getElementById('toolbar-swarms').style.display = view === 'swarms' ? 'flex' : 'none';
     if (view === 'tracker') {
       var isBoard = sub !== 'road';
       document.querySelectorAll('#toolbar-tracker .segmented button').forEach(function (b) { b.setAttribute('aria-selected', (b.dataset.sub === 'board') === isBoard ? 'true' : 'false'); });
@@ -418,6 +426,7 @@
       worktree: '.claude/worktrees/dashboard-react',
       tmux: 'alive',
       lastActivity: '4m ago',
+      recencyMinutes: 4,
       recentHistory: [
         { phase: 'QA-RED', note: 'feasibility check flagged an ambiguity', time: '4m ago' },
         { phase: 'DOC-GATE', note: 'doc gate clean, no findings', time: '22m ago' },
@@ -437,6 +446,7 @@
       worktree: '.claude/worktrees/notes-local',
       tmux: 'alive',
       lastActivity: '41m ago',
+      recencyMinutes: 41,
       recentHistory: [
         { phase: 'IMPLEMENT', note: 'writing .harness/notes.local.md handling', time: '41m ago' },
         { phase: 'QA-RED', note: 'tests written, 4 failing as expected', time: '1h ago' },
@@ -453,6 +463,7 @@
       worktree: '.claude/worktrees/cli-export',
       tmux: 'dead',
       lastActivity: '3h ago',
+      recencyMinutes: 180,
       recentHistory: [
         { phase: 'IMPLEMENT', note: 'no further HISTORY.md progress', time: '3h ago' },
         { phase: 'QA-RED', note: 'tests written, 2 failing as expected', time: '3h ago' },
@@ -468,6 +479,7 @@
       worktree: '.claude/worktrees/swarms-backend',
       tmux: 'alive',
       lastActivity: '1d ago',
+      recencyMinutes: 1440,
       recentHistory: [
         { phase: 'PUBLISH', note: 'PR #12 opened, ticket moved to In Review', time: '1d ago' },
         { phase: 'DOC-POST-IMPL', note: 'doc post-impl clean, no findings', time: '1d ago' },
@@ -485,6 +497,7 @@
       worktree: '.worktrees/harness-doctor-check',
       tmux: 'unknown',
       lastActivity: '2m ago',
+      recencyMinutes: 2,
       recentHistory: [
         { phase: 'PLAN', note: 'plan read, worktree created', time: '2m ago' },
       ],
@@ -492,6 +505,25 @@
     },
   ];
   var selectedSwarm = null;
+  var sortMode = 'priority';
+
+  function priorityRank(s) {
+    if (s.phase === 'HANDOFF NEEDED') return 0;
+    if (isStalled(s.status)) return 1;
+    if (s.phase === 'PUBLISH') return 3;
+    return 2;
+  }
+
+  function sortedSwarms() {
+    var copy = SWARMS.slice();
+    if (sortMode === 'name') return copy; // already slug-ordered
+    if (sortMode === 'recent') {
+      // recencyMinutes is mock-only data standing in for HISTORY.md's last real
+      // timestamp — the real backend would sort by that timestamp directly.
+      return copy.sort(function (a, b) { return a.recencyMinutes - b.recencyMinutes; });
+    }
+    return copy.sort(function (a, b) { return priorityRank(a) - priorityRank(b); });
+  }
 
   function isStalled(status) { return status.indexOf('STALLED (') === 0; }
 
@@ -545,7 +577,7 @@
   }
 
   function renderSwarmList() {
-    document.getElementById('swarm-list').innerHTML = SWARMS.map(function (s) {
+    document.getElementById('swarm-list').innerHTML = sortedSwarms().map(function (s) {
       var pill = isStalled(s.status) ? { text: 'Stalled', cls: 'phase-pill stalled' } : phaseLabel(s.phase);
       if (isRunning(s)) pill.cls += ' pulse';
       var dotCls = s.tmux === 'alive' ? 'dot alive' : (s.tmux === 'dead' ? 'dot dead' : 'dot unknown');
@@ -614,6 +646,14 @@
       renderSwarmDetail();
     });
   }
+
+  document.querySelectorAll('#toolbar-swarms .segmented button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      sortMode = btn.dataset.sort;
+      document.querySelectorAll('#toolbar-swarms .segmented button').forEach(function (b) { b.setAttribute('aria-selected', b === btn ? 'true' : 'false'); });
+      renderSwarmList();
+    });
+  });
 
   renderSwarmList();
   renderSwarmDetail();
