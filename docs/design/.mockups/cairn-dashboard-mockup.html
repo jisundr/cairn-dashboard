@@ -101,7 +101,7 @@
   .table-wrap { overflow-x: auto; }
 
   /* Tracker: Board */
-  .board { display: flex; gap: .8rem; overflow-x: auto; padding-bottom: .4rem; }
+  .board { display: flex; gap: .8rem; overflow-x: auto; padding-bottom: .4rem; align-items: flex-start; min-height: calc(100vh - 140px); }
   .col { flex: 0 0 240px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: .7rem; }
   .col h2 { font-size: 1rem; color: var(--text); margin: .1rem .1rem .6rem; display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
   .col h2 > span:last-child { font-size: .78rem; color: var(--text-faint); font-weight: 400; }
@@ -130,7 +130,7 @@
   .task-card .scope { color: var(--text-dim); font-size: .76rem; margin-top: .3rem; line-height: 1.35; }
 
   /* Tracker: Roadmap */
-  .rmap { display: flex; gap: 1.3rem; overflow-x: auto; padding: .5rem 0 1rem; }
+  .rmap { display: flex; gap: 1.3rem; overflow-x: auto; padding: .5rem 0 1rem; align-items: flex-start; min-height: calc(100vh - 140px); }
   .rstation { flex: 0 0 230px; }
   .rnoderow { position: relative; height: 32px; display: flex; align-items: center; justify-content: center; margin-bottom: .6rem; }
   .rnoderow::before { content: ""; position: absolute; top: 50%; left: 0; right: 0; height: 2px; transform: translateY(-50%); background: var(--border); }
