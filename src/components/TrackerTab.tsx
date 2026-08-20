@@ -65,9 +65,11 @@ export default function TrackerTab() {
 
   return (
     <div>
-      <div className="tabs" role="group" aria-label="Tracker view">
-        <button aria-selected={sub === 'board'} onClick={() => setSub('board')}>Board</button>
-        <button aria-selected={sub === 'roadmap'} onClick={() => setSub('roadmap')}>Roadmap</button>
+      <div className="toolbar">
+        <div className="segmented" role="group" aria-label="Tracker view">
+          <button aria-selected={sub === 'board'} onClick={() => setSub('board')}>Board</button>
+          <button aria-selected={sub === 'roadmap'} onClick={() => setSub('roadmap')}>Roadmap</button>
+        </div>
       </div>
       {sub === 'board' ? (
         <div className="board">
