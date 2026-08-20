@@ -332,9 +332,94 @@ th button:hover { color: var(--color-text-secondary); }
 .icard.is-done::before { background: var(--color-success); }
 .icard.is-done { color: var(--color-text-secondary); }
 
+/* Swarms tab — list/detail split, ported 1:1 from
+   docs/cairn-dashboard/design/.mockups/cairn-dashboard-mockup.html, its
+   var(--text)/var(--text-dim)/var(--surface)/var(--border)/var(--bg)/
+   var(--primary)/var(--success)/var(--warning)/var(--error) mapped to this
+   repo's --color-text-primary/--color-text-secondary/--color-surface/
+   --color-border/--color-background/--color-primary/--color-success/
+   --color-warning/--color-error (same mapping used for the earlier
+   Tracker Board/Roadmap port). */
+.swarms-layout { display: flex; gap: 1rem; align-items: stretch; min-height: calc(100vh - 220px); }
+.swarm-list-pane { flex: 0 0 38%; display: flex; flex-direction: column; gap: .5rem; align-content: flex-start; }
+.swarm-detail-pane { flex: 1 1 62%; min-width: 0; display: flex; }
+.swarm-detail-pane > .detail-card, .swarm-detail-pane > .detail-empty { flex: 1 1 auto; }
+
+.swarm-list-item { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 10px; padding: .65rem .8rem; cursor: pointer; }
+.swarm-list-item.selected { border-color: var(--color-primary); background: var(--color-background); }
+.swarm-list-item .row1 { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.swarm-list-item .slug { font-weight: 700; font-size: .84rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; }
+.swarm-list-item .row2 { display: flex; align-items: center; gap: .5rem; margin-top: .3rem; font-size: .74rem; color: var(--color-text-secondary); }
+.mini-progress { display: flex; gap: 2px; margin-top: .4rem; }
+.mini-progress .seg { flex: 1 1 0; height: 4px; border-radius: 2px; background: var(--color-border); }
+.mini-progress .seg.filled { background: var(--color-primary); }
+
+.phase-pill { font-size: .66rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; padding: .16rem .5rem; border-radius: 99px; background: var(--color-background); color: var(--color-text-secondary); border: 1px solid var(--color-border); flex: 0 0 auto; }
+.phase-pill.handoff { background: var(--color-warning); color: #fff; border-color: transparent; }
+.phase-pill.done { background: var(--color-success); color: #fff; border-color: transparent; }
+.phase-pill.stalled { background: var(--color-error); color: #fff; border-color: transparent; }
+.phase-pill.running { background: var(--color-primary); color: #fff; border-color: transparent; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot.alive { background: var(--color-success); }
+.dot.dead { background: var(--color-error); }
+.dot.unknown { background: var(--color-text-faint); }
+
+.detail-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 10px; padding: 1.1rem 1.2rem; }
+.detail-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .9rem; }
+.detail-head-left { display: flex; align-items: center; gap: .6rem; min-width: 0; }
+.detail-slug { font-size: 1rem; font-weight: 700; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.detail-close { background: none; border: none; color: var(--color-text-faint); font-size: 1.1rem; line-height: 1; cursor: pointer; padding: .2rem .4rem; border-radius: 6px; flex: 0 0 auto; }
+.detail-close:hover { color: var(--color-text-primary); background: var(--color-background); }
+
+.detail-section { padding: .9rem 0; border-top: 1px solid var(--color-border); }
+.detail-section:first-of-type { border-top: none; padding-top: 0; }
+
+.timeline { display: flex; flex-wrap: wrap; align-items: center; gap: .15rem; font-size: .74rem; }
+/* Label text comes from data-label via ::before (not a DOM text child) — see
+   the comment in SwarmsTab.tsx's DetailTimeline for why. */
+.timeline .step::before { content: attr(data-label); }
+.timeline .step { padding: .15rem .5rem; border-radius: 99px; color: var(--color-text-faint); }
+.timeline .step.done { color: var(--color-text-secondary); }
+.timeline .step.current { color: #fff; background: var(--color-primary); font-weight: 700; }
+.timeline .step.paused { color: #fff; background: var(--color-warning); font-weight: 700; }
+.timeline .arrow { color: var(--color-border); font-size: .7rem; }
+
+.status-row { display: flex; align-items: baseline; justify-content: space-between; gap: .8rem; }
+.detail-meta { display: flex; gap: 1.2rem; flex-wrap: wrap; color: var(--color-text-faint); font-size: .74rem; margin-top: .6rem; }
+.detail-meta .k { margin-right: .3rem; }
+.detail-meta .mono { color: var(--color-text-secondary); }
+
+.badge { display: inline-flex; align-items: center; gap: .3rem; font-size: .8rem; font-weight: 600; padding: .25rem .6rem; border-radius: 99px; }
+.badge.stalled { background: var(--color-error); color: #fff; }
+.hint { color: var(--color-text-secondary); font-size: .82rem; }
+.elapsed { color: var(--color-text-secondary); font-size: .78rem; white-space: nowrap; }
+
+.detail-subhead { font-size: .68rem; color: var(--color-text-faint); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; margin: 0 0 .5rem; }
+.history-log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .45rem; }
+.history-log li { display: flex; gap: .6rem; font-size: .8rem; align-items: baseline; }
+.history-log .hphase { font-weight: 600; color: var(--color-text-primary); flex: 0 0 auto; }
+.history-log .hnote { color: var(--color-text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: default; }
+.history-log .htime { color: var(--color-text-faint); font-size: .72rem; margin-left: auto; flex: 0 0 auto; }
+
+.pane-tail {
+  margin-top: .3rem; background: var(--color-background); border: 1px solid var(--color-border); border-radius: 8px;
+  padding: .6rem .7rem; font-size: .74rem; line-height: 1.5; color: var(--color-text-secondary); white-space: pre-wrap;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  max-height: 240px; overflow-y: auto;
+}
+
+.detail-empty { background: var(--color-surface); border: 1px dashed var(--color-border); border-radius: 10px; padding: 3rem 1rem; color: var(--color-text-faint); font-size: .84rem; text-align: center; display: flex; align-items: center; justify-content: center; }
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+  .pulse { animation: pulse 1.8s ease-in-out infinite; }
+}
+
 @media (max-width: 720px) {
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
   .card-grid { grid-template-columns: 1fr; }
   .board, .rmap { flex-direction: column; }
   .col, .rstation { flex: 1 1 auto; }
+  .swarms-layout { flex-direction: column; }
+  .swarm-list-pane, .swarm-detail-pane { flex: 1 1 auto; }
 }
